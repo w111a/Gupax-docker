@@ -10,8 +10,8 @@
 #   docker build --build-arg P2POOL_VERSION=master --build-arg XMRIG_VERSION=master .
 # =============================================================================
 
-# Global build args — defined before FROM so they're available to all stages.
-# Each stage MUST re-declare them with ARG to use them.
+# Global build args — for documentation and --build-arg override
+# Each stage MUST redeclare these with defaults for RUN commands to access them
 ARG P2POOL_VERSION=master
 ARG XMRIG_VERSION=master
 
@@ -22,8 +22,8 @@ ARG XMRIG_VERSION=master
 # ---------------------------------------------------------------------------
 FROM ubuntu:22.04 AS p2pool-builder
 
-# Re-declare global ARG so it's available in this stage
-ARG P2POOL_VERSION
+# Redeclare ARG with default value — required for RUN commands in this stage
+ARG P2POOL_VERSION=master
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -35,8 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzmq3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone P2Pool — default branch is "master", NOT "main"
-RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Cloned ${P2POOL_VERSION} successfully"
+RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Successfully cloned P2Pool ${P2POOL_VERSION}"
 
 WORKDIR /p2pool-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
@@ -48,8 +47,8 @@ RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
 # ---------------------------------------------------------------------------
 FROM ubuntu:22.04 AS xmrig-builder
 
-# Re-declare global ARG so it's available in this stage
-ARG XMRIG_VERSION
+# Redeclare ARG with default value — required for RUN commands in this stage
+ARG XMRIG_VERSION=master
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -60,8 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libuv1-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone XMRig — default branch is "master", NOT "main"
-RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Cloned ${XMRIG_VERSION} successfully"
+RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Successfully cloned XMRig ${XMRIG_VERSION}"
 
 WORKDIR /xmrig-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
