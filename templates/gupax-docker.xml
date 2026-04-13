@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>gupax-docker</Name>
+  <Repository>w111a/gupax-docker:latest</Repository>
+  <Registry>https://hub.docker.com/r/w111a/gupax-docker</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/w111a/Gupax-docker/issues</Support>
+  <Project>https://github.com/w111a/Gupax-docker</Project>
+  <Overview>Gupax-docker runs P2Pool + XMRig for easy, decentralized Monero mining. P2Pool provides trustless, decentralized mining payouts and XMRig handles the hashing. Simply set your Monero wallet address and start mining in minutes.&#13;&#10;&#13;&#10;IMPORTANT: You MUST set your WALLET_ADDRESS before starting the container. Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
+  <Category>Crypto:</Category>
+  <WebUI></WebUI>
+  <Icon>https://raw.githubusercontent.com/w111a/Gupax-docker/main/icons/gupax.png</Icon>
+  <ExtraParams></ExtraParams>
+  <PostArgs></PostArgs>
+
+  <!-- ============================================================ -->
+  <!-- Environment Variables                                        -->
+  <!-- ============================================================ -->
+  <Environment>
+    <Variable>
+      <Name>WALLET_ADDRESS</Name>
+      <Value></Value>
+      <Mode></Mode>
+      <Description>Your Monero wallet address for mining payouts. REQUIRED.</Description>
+      <Display>always</Display>
+      <Required>true</Required>
+      <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>P2POOL_MINI</Name>
+      <Value>true</Value>
+      <Mode></Mode>
+      <Description>Use P2Pool mini sidechain (recommended for most miners). Set to 'false' for the main sidechain.</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>XMRIG_THREADS</Name>
+      <Value>0</Value>
+      <Mode></Mode>
+      <Description>Number of CPU mining threads. 0 = auto-detect all available cores.</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>MONERO_NODE</Name>
+      <Value>auto</Value>
+      <Mode></Mode>
+      <Description>Monero node mode: 'auto' (let P2Pool decide), 'local' (built-in node), or 'remote' (external node).</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>P2POOL_STRATUM_PORT</Name>
+      <Value>3333</Value>
+      <Mode></Mode>
+      <Description>P2Pool stratum server port. Miners connect to this port.</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>P2POOL_MONERO_PORT</Name>
+      <Value>37889</Value>
+      <Mode></Mode>
+      <Description>P2Pool Monero node ZMQ port.</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>never</Mask>
+    </Variable>
+  </Environment>
+
+  <!-- ============================================================ -->
+  <!-- Ports                                                        -->
+  <!-- ============================================================ -->
+  <Ports>
+    <Port>
+      <HostPort>3333</HostPort>
+      <ContainerPort>3333</ContainerPort>
+      <Protocol>tcp</Protocol>
+      <Description>P2Pool Stratum - Connect your miners here</Description>
+      <Display>always</Display>
+    </Port>
+    <Port>
+      <HostPort>37889</HostPort>
+      <ContainerPort>37889</ContainerPort>
+      <Protocol>tcp</Protocol>
+      <Description>P2Pool Monero Node ZMQ</Description>
+      <Display>always</Display>
+    </Port>
+    <Port>
+      <HostPort>18080</HostPort>
+      <ContainerPort>18080</ContainerPort>
+      <Protocol>tcp</Protocol>
+      <Description>Monero P2P Network (local node)</Description>
+      <Display>advanced</Display>
+    </Port>
+    <Port>
+      <HostPort>18081</HostPort>
+      <ContainerPort>18081</ContainerPort>
+      <Protocol>tcp</Protocol>
+      <Description>Monero RPC (local node)</Description>
+      <Display>advanced</Display>
+    </Port>
+  </Ports>
+
+  <!-- ============================================================ -->
+  <!-- Volumes                                                      -->
+  <!-- ============================================================ -->
+  <Volumes>
+    <Volume>
+      <HostDir>/mnt/user/appdata/gupax-docker/p2pool</HostDir>
+      <ContainerDir>/p2pool</ContainerDir>
+      <Mode>rw</Mode>
+      <Description>P2Pool database and share data (persists across restarts)</Description>
+      <Display>always</Display>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/gupax-docker/monero</HostDir>
+      <ContainerDir>/monero</ContainerDir>
+      <Mode>rw</Mode>
+      <Description>Monero blockchain data (persists across restarts)</Description>
+      <Display>always</Display>
+    </Volume>
+  </Volumes>
+
+  <!-- ============================================================ -->
+  <!-- Restart Policy                                               -->
+  <!-- ============================================================ -->
+  <RestartPolicy>unless-stopped</RestartPolicy>
+
+</Container>
