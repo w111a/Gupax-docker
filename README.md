@@ -1,4 +1,10 @@
-<img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="100%" alt="Gupax Banner">
+<img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="600">
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/w111a/gupax-docker?style=flat-square&logo=docker&color=2496ED)](https://hub.docker.com/r/w111a/gupax-docker)
+[![Docker Image Size](https://img.shields.io/docker/image-size/w111a/gupax-docker/latest?style=flat-square&logo=docker&color=2496ED)](https://hub.docker.com/r/w111a/gupax-docker)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/w111a/Gupax-docker/docker-publish.yml?style=flat-square&logo=github&color=2EA44F)](https://github.com/w111a/Gupax-docker/actions)
+[![License](https://img.shields.io/github/license/w111a/Gupax-docker?style=flat-square&logo=open-source-initiative&color=97BA6E)](https://github.com/w111a/Gupax-docker/blob/main/LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/w111a/Gupax-docker?style=flat-square&logo=github&color=yellow)](https://github.com/w111a/Gupax-docker/stargazers)
 
 > Docker packaging for [Gupax](https://github.com/hinto-janai/gupax) — the GUI that unites [P2Pool](https://github.com/SChernykh/p2pool) and [XMRig](https://github.com/xmrig/xmrig) for easy, decentralized <img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/221_Monero_logo_logos-512.png" width="20" style="vertical-align:middle;"> Monero mining.
 
