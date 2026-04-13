@@ -1,8 +1,6 @@
-# 🚀 Gupax-docker
+<img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="100%" alt="Gupax Banner">
 
-**Decentralized Monero mining with P2Pool + XMRig in a single Docker container**
-
-Inspired by [Gupax](https://github.com/hinto-janai/gupax), this container packages P2Pool (decentralized mining pool) and XMRig (high-performance CPU miner) together so you can start mining Monero trustlessly with a single command.
+> Docker packaging for [Gupax](https://github.com/hinto-janai/gupax) — the GUI that unites [P2Pool](https://github.com/SChernykh/p2pool) and [XMRig](https://github.com/xmrig/xmrig) for easy, decentralized <img src="https://cdn4.iconfinder.com/data/icons/logos-and-brands/512/221_Monero_logo_logos-512.png" width="20" style="vertical-align:middle;"> Monero mining.
 
 ---
 
@@ -10,184 +8,156 @@ Inspired by [Gupax](https://github.com/hinto-janai/gupax), this container packag
 
 | Feature | Description |
 |---|---|
-| 🏊 P2Pool | Decentralized, trustless mining pool — no operator, no fees, no middleman |
-| ⛏️ XMRig | High-performance, open-source Monero CPU miner |
-| 🔗 Auto Orchestration | P2Pool starts first, XMRig connects automatically |
-| 🐳 Docker-first | One container, one command, zero hassle |
-| 📦 Persistent Data | Blockchain & share data survives restarts via Docker volumes |
-| 🖥️ Unraid Support | Install directly via Community Applications or Docker template |
+| 🐳 One-command setup | Run Gupax + P2Pool + XMRig with a single `docker compose up` |
+| 🔗 Decentralized mining | P2Pool provides trustless, decentralized Monero mining |
+| 💾 Persistent data | Blockchain and P2Pool data persist across container restarts |
+| ⚙️ Configurable | Environment variables for wallet, mining threads, and more |
+| 🔄 Auto-restart | Containers restart automatically on failure or system reboot |
+| 🖥️ GUI support | X11 forwarding for the Gupax graphical interface |
+| 🟠 Unraid support | Pre-built template for easy install via Community Applications |
+
+---
+
+## 📋 Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) (v20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
+- A Monero wallet address (for mining payouts)
+- (Optional) X11 display server for Gupax GUI on Linux
 
 ---
 
 ## 🚀 Quick Start
 
-### Docker Compose (Recommended)
-
-1. Clone this repo:
+### Option A: Docker Compose (Recommended)
 
 ```bash
+# 1. Clone the repository
 git clone https://github.com/w111a/Gupax-docker.git
 cd Gupax-docker
-```
 
-2. Set your Monero wallet address:
+# 2. Set your wallet address
+export WALLET_ADDRESS=4ABCDEF1234567890abcdef1234567890abcdef1234567890abcdef12345678
 
-```bash
-export WALLET_ADDRESS=4AdUndXHHZ6cfufTMvppY6JwXN75MUEusn54qB8Q4J7RWRL7mQGXn3M4GCQ7SdfmZAJ6b8CRuA6bJ4Uu6RzF5VwGSm8nWx
-```
-
-3. Start mining:
-
-```bash
+# 3. Start mining
 docker compose up -d
 ```
 
-That's it! P2Pool will sync and XMRig will begin mining once P2Pool is ready.
-
-### Docker CLI
+### Option B: Docker Run
 
 ```bash
 docker run -d \
   --name gupax \
   --restart unless-stopped \
+  -e WALLET_ADDRESS=4ABCDEF1234567890abcdef1234567890abcdef1234567890abcdef12345678 \
   -p 3333:3333 \
   -p 37889:37889 \
-  -p 18080:18080 \
-  -p 18081:18081 \
-  -e WALLET_ADDRESS=4AdUndXHHZ6cfufTMvppY6JwXN75MUEusn54qB8Q4J7RWRL7mQGXn3M4GCQ7SdfmZAJ6b8CRuA6bJ4Uu6RzF5VwGSm8nWx \
-  -e P2POOL_MINI=true \
   -v gupax-p2pool:/p2pool \
   -v gupax-monero:/monero \
-  w111a/gupax-docker
+  w111a/gupax-docker:latest
 ```
 
 ---
 
-## 🖥️ Unraid Installation
+## 🟠 Unraid Installation
 
-Gupax-docker can be installed on Unraid in two ways:
+Gupax-docker includes a pre-built [Unraid template](templates/gupax-docker.xml) so you can install it directly from the Unraid Community Applications (CA) plugin — no command line needed.
 
-### Method 1: Community Applications (Recommended)
+### Install via Community Applications
 
-Once the template is merged into the [Community Applications](https://unraid.net/community/apps) repository, you can install directly:
+1. **Install the Community Applications plugin** (if you haven't already):
+   - Go to the [CA Plugin page](https://forums.unraid.net/topic/38582-plug-in-community-applications/) and follow the installation instructions.
+2. **Search for Gupax-docker** in the Apps tab of your Unraid webGUI.
+3. **Click Install** — the template will auto-populate all settings.
+4. **Set your wallet address** — fill in the `WALLET_ADDRESS` field with your Monero wallet address.
+5. **Click Apply** — the container will start mining automatically.
 
-1. Open the **Apps** tab in your Unraid web GUI
-2. Search for **"gupax"** or **"gupax-docker"**
-3. Click **Install**
-4. Fill in the required fields:
-   - **WALLET_ADDRESS** — Your Monero wallet address for payouts *(required)*
-   - **P2POOL_MINI** — Set to `true` for the mini sidechain *(recommended for most miners)*
-   - **XMRIG_THREADS** — Number of CPU threads (`0` = auto-detect)
-5. Click **Apply** — the container will download and start automatically
+### Manual Install via Unraid Docker Tab
 
-### Method 2: Manual Template Install
+If you prefer not to use Community Applications, you can add the template manually:
 
-If the template isn't yet in Community Applications, you can add it manually:
-
-1. In Unraid, go to **Docker** tab → click **Add Container**
-2. Click **Template** dropdown → select **Choose a template** → click **Add a new template**
-3. Name it `gupax-docker` and paste the URL of the raw XML template:
+1. Go to **Docker** → **Add Container** in the Unraid webGUI.
+2. Set **Template Repository** to:
    ```
-   https://raw.githubusercontent.com/w111a/Gupax-docker/main/templates/gupax-docker.xml
+   https://github.com/w111a/Gupax-docker
    ```
-4. The template fields will auto-populate — fill in your **WALLET_ADDRESS**
-5. Click **Apply** to pull the image and start the container
+3. Select the **gupax-docker** template from the dropdown.
+4. Fill in the `WALLET_ADDRESS` field (required).
+5. Adjust other settings as needed (threads, P2Pool mini, ports).
+6. Click **Apply** to start the container.
 
-### Unraid Configuration Tips
+### Unraid Template Fields
 
-| Setting | Recommendation |
-|---|---|
-| **P2POOL_MINI** | `true` — the mini sidechain has lower difficulty, ideal for solo/small miners |
-| **XMRIG_THREADS** | Set to 1–2 threads less than your total CPUs to leave headroom for Unraid |
-| **MONERO_NODE** | `auto` — P2Pool will use a remote node if no local node is available |
-| **Appdata Path** | Default `/mnt/user/appdata/gupax-docker/` is fine for persistent data |
-| **CPU Pinning** | In Unraid, you can pin specific CPUs under the container settings to avoid contention with other containers |
+| Field | Required | Default | Description |
+|---|---|---|---|
+| `WALLET_ADDRESS` | ✅ Yes | — | Your Monero wallet address for mining payouts |
+| `P2POOL_MINI` | No | `true` | Use P2Pool mini sidechain (recommended) |
+| `XMRIG_THREADS` | No | `0` | CPU threads for mining (0 = auto) |
+| `MONERO_NODE` | No | `auto` | Monero node: `auto`, `local`, or `remote` |
+| `P2POOL_STRATUM_PORT` | No | `3333` | P2Pool stratum server port |
+| `P2POOL_MONERO_PORT` | No | `37889` | P2Pool Monero node ZMQ port |
 
-> **💡 Tip:** If you want to run a full Monero node alongside P2Pool, set `MONERO_NODE=local`. This requires ~150GB of storage and significant initial sync time but provides the most privacy.
+### Unraid Volumes
+
+The template automatically creates persistent volumes under `/mnt/user/appdata/gupax-docker/`:
+
+| Unraid Path | Container Path | Description |
+|---|---|---|
+| `.../gupax-docker/p2pool` | `/p2pool` | P2Pool database and share data |
+| `.../gupax-docker/monero` | `/monero` | Monero blockchain data |
+
+> **Tip:** Place the `monero` volume on a fast drive (SSD/cache pool) for best sync performance.
 
 ---
 
 ## ⚙️ Configuration
 
-All configuration is done via environment variables:
+### Environment Variables
 
-| Variable | Default | Description |
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `WALLET_ADDRESS` | ✅ Yes | — | Your Monero wallet address for mining payouts |
+| `P2POOL_STRATUM_PORT` | No | `3333` | P2Pool stratum server port |
+| `P2POOL_MONERO_PORT` | No | `37889` | P2Pool Monero node port |
+| `XMRIG_THREADS` | No | `0` (auto) | Number of mining CPU threads (0 = auto-detect) |
+| `P2POOL_MINI` | No | `true` | Use P2Pool mini sidechain (recommended for most miners) |
+| `MONERO_NODE` | No | `auto` | Use `local` for built-in node, `remote` for external, `auto` to decide |
+
+### Ports
+
+| Port | Protocol | Service | Description |
+|---|---|---|---|
+| `3333` | TCP | P2Pool | Stratum server for miners |
+| `37889` | TCP | P2Pool | Monero node ZMQ port |
+| `18080` | TCP | Monerod | Monero P2P network port (if running local node) |
+| `18081` | TCP | Monerod | Monero RPC port (if running local node) |
+
+### Volumes
+
+| Volume | Path | Description |
 |---|---|---|
-| `WALLET_ADDRESS` | *(required)* | Your Monero wallet address for mining payouts |
-| `P2POOL_MINI` | `true` | Use P2Pool mini sidechain (lower difficulty, faster payouts) |
-| `XMRIG_THREADS` | `0` | Number of CPU threads for mining (0 = auto-detect) |
-| `MONERO_NODE` | `auto` | Monero node mode: `auto`, `local`, or `remote` |
-| `P2POOL_STRATUM_PORT` | `3333` | P2Pool stratum server port |
-| `P2POOL_MONERO_PORT` | `37889` | P2Pool Monero node ZMQ port |
-| `MONERO_P2P_PORT` | `18080` | Monero P2P network port |
-| `MONERO_RPC_PORT` | `18081` | Monero RPC port |
+| `gupax-p2pool` | `/p2pool` | P2Pool database and share data |
+| `gupax-monero` | `/monero` | Monero blockchain data |
 
 ---
 
-## 📂 Volumes
+## 🔗 Official Resources
 
-| Container Path | Purpose |
-|---|---|
-| `/p2pool` | P2Pool database and share data (persistent) |
-| `/monero` | Monero blockchain data if running a local node (persistent) |
-
----
-
-## 🌐 Ports
-
-| Port | Protocol | Purpose |
-|---|---|---|
-| `3333` | TCP | P2Pool stratum server — connect your miners here |
-| `37889` | TCP | P2Pool Monero node ZMQ port |
-| `18080` | TCP | Monero P2P network port (local node) |
-| `18081` | TCP | Monero RPC port (local node) |
-
----
-
-## 🔧 Connecting Additional Miners
-
-Once the container is running, any machine on your network can point its miner at the P2Pool stratum:
-
-```bash
-# Example: running a separate XMRig on another machine
-./xmrig --url=YOUR_UNRAID_IP:3333 --user=YOUR_WALLET_ADDRESS
-```
-
-Or add another XMRig container pointing to the same P2Pool instance.
-
----
-
-## 🏗️ Building from Source
-
-```bash
-git clone https://github.com/w111a/Gupax-docker.git
-cd Gupax-docker
-docker build -t w111a/gupax-docker .
-```
+- [Gupax](https://github.com/hinto-janai/gupax) — The GUI unifying P2Pool & XMRig
+- [P2Pool](https://github.com/SChernykh/p2pool) — Decentralized Monero mining pool
+- [XMRig](https://github.com/xmrig/xmrig) — High-performance Monero miner
+- [Monero](https://www.getmonero.org/) — Private, decentralized cryptocurrency
 
 ---
 
 ## ⚠️ Disclaimer
 
-- **Mining cryptocurrency consumes electricity.** Ensure your power costs are viable before mining.
-- **P2Pool is decentralized** — there is no operator to contact for support if payouts don't occur as expected.
-- **This project is not affiliated with** the official [Gupax](https://github.com/hinto-janai/gupax) GUI project. It is inspired by and complementary to it.
-- **Always verify your wallet address** before starting the container. Incorrect addresses will result in lost payouts.
+**Mining cryptocurrency consumes significant electricity and may not be profitable depending on your hardware, electricity costs, and market conditions.** This project is provided as-is for educational and convenience purposes. Always do your own research before investing in mining hardware or cryptocurrency. The maintainers of this repository are not responsible for any financial losses.
 
 ---
 
-## 📜 License
+## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
 
-P2Pool is licensed under the [GPLv3](https://github.com/SChernykh/p2pool/blob/master/LICENSE).
-XMRig is licensed under the [GPLv3](https://github.com/xmrig/xmrig/blob/master/LICENSE).
-
----
-
-## 🙏 Credits
-
-- [P2Pool](https://github.com/SChernykh/p2pool) — Decentralized Monero mining pool by SChernykh
-- [XMRig](https://github.com/xmrig/xmrig) — High-performance Monero miner
-- [Gupax](https://github.com/hinto-janai/gupax) — The original Gupax GUI that inspired this project
-- [Monero](https://www.getmonero.org/) — Private, decentralized cryptocurrency
+Gupax, P2Pool, and XMRig are each licensed under their respective licenses — see the official repositories linked above.
