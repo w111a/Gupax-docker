@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libzmq3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone P2Pool — using --branch master and --depth 1 for a shallow clone
-RUN git clone --branch "${P2POOL_VERSION}" --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src
+# Clone P2Pool — branch is ${P2POOL_VERSION}, defaulting to master
+RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Successfully cloned ${P2POOL_VERSION}"
 
 WORKDIR /p2pool-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
@@ -57,8 +57,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libuv1-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone XMRig — using --branch master and --depth 1 for a shallow clone
-RUN git clone --branch "${XMRIG_VERSION}" --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src
+# Clone XMRig — branch is ${XMRIG_VERSION}, defaulting to master
+RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Successfully cloned ${XMRIG_VERSION}"
 
 WORKDIR /xmrig-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
