@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  gupax:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: w111a/gupax-docker:latest
+    container_name: gupax
+    restart: unless-stopped
+    environment:
+      - WALLET_ADDRESS=${WALLET_ADDRESS:?Please set WALLET_ADDRESS in .env or docker compose command}
+      - P2POOL_MINI=${P2POOL_MINI:-true}
+      - XMRIG_THREADS=${XMRIG_THREADS:-0}
+      - MONERO_NODE=${MONERO_NODE:-auto}
+      - P2POOL_STRATUM_PORT=${P2POOL_STRATUM_PORT:-3333}
+      - P2POOL_MONERO_PORT=${P2POOL_MONERO_PORT:-37889}
+    ports:
+      - "${P2POOL_STRATUM_PORT:-3333}:${P2POOL_STRATUM_PORT:-3333}"
+      - "${P2POOL_MONERO_PORT:-37889}:${P2POOL_MONERO_PORT:-37889}"
+      - "18080:18080"
+      - "18081:18081"
+    volumes:
+      - gupax-p2pool:/p2pool
+      - gupax-monero:/monero
+    mem_limit: 4g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  gupax-p2pool:
+    driver: local
+  gupax-monero:
+    driver: local
