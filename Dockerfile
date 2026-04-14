@@ -4,16 +4,15 @@
 #
 # Build args (override with --build-arg):
 #   P2POOL_VERSION  — P2Pool branch or tag (default: master)
-#   XMRIG_VERSION   — XMRig branch or tag (default: master)
+#   XMRIG_VERSION   — XMRig branch or tag (default: main)
 #
 # Example:
-#   docker build --build-arg P2POOL_VERSION=master --build-arg XMRIG_VERSION=master .
+#   docker build --build-arg P2POOL_VERSION=master --build-arg XMRIG_VERSION=main .
 # =============================================================================
 
-# Global build args — for documentation and --build-arg override
-# Each stage MUST redeclare these with defaults for RUN commands to access them
+# Global build args — must be redeclared in each stage for RUN commands to access them
 ARG P2POOL_VERSION=master
-ARG XMRIG_VERSION=master
+ARG XMRIG_VERSION=main
 
 # ---------------------------------------------------------------------------
 # Stage 1: Build P2Pool from source
@@ -22,10 +21,11 @@ ARG XMRIG_VERSION=master
 # ---------------------------------------------------------------------------
 FROM ubuntu:22.04 AS p2pool-builder
 
-# Redeclare ARG with default value — required for RUN commands in this stage
+# Redeclare ARG so it is available in RUN commands within this stage
 ARG P2POOL_VERSION=master
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     build-essential \
     cmake \
     git \
@@ -33,9 +33,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libuv1-dev \
     libzmq3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
 
-RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Successfully cloned P2Pool ${P2POOL_VERSION}"
+# Clone P2Pool — default branch is "master"
+RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Cloned P2Pool ref: ${P2POOL_VERSION}"
 
 WORKDIR /p2pool-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
@@ -43,23 +45,26 @@ RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
 # ---------------------------------------------------------------------------
 # Stage 2: Build XMRig from source
 # XMRig repo: https://github.com/xmrig/xmrig
-# Default branch: master
+# Default branch: main
 # ---------------------------------------------------------------------------
 FROM ubuntu:22.04 AS xmrig-builder
 
-# Redeclare ARG with default value — required for RUN commands in this stage
-ARG XMRIG_VERSION=master
+# Redeclare ARG so it is available in RUN commands within this stage
+ARG XMRIG_VERSION=main
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     build-essential \
     cmake \
     git \
     libhwloc-dev \
     libssl-dev \
     libuv1-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
 
-RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Successfully cloned XMRig ${XMRIG_VERSION}"
+# Clone XMRig — default branch is "main" (NOT "master")
+RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Cloned XMRig ref: ${XMRIG_VERSION}"
 
 WORKDIR /xmrig-src/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
