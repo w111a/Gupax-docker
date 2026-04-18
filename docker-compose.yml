@@ -6,44 +6,31 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        P2POOL_VERSION: ${P2POOL_VERSION:-v4.14}
-        P2POOL_SHA256: ${P2POOL_SHA256:-e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01}
-        XMRIG_VERSION: ${XMRIG_VERSION:-6.26.0}
-        XMRIG_SHA256: ${XMRIG_SHA256:-fc6f8ae5f64e4f17481f7e3be29a1c56949f216a998414188003eae1db20c9e5}
-    image: w111a/gupax-docker:latest
+        GUPAX_VERSION: ${GUPAX_VERSION:-v2.0.1}
+        GUPAX_SHA256: ${GUPAX_SHA256:-67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5}
+    image: ghcr.io/w111a/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped
     stop_grace_period: 30s
     environment:
-      - WALLET_ADDRESS=${WALLET_ADDRESS:?Please set WALLET_ADDRESS in .env or docker compose command}
-      - P2POOL_MINI=${P2POOL_MINI:-true}
-      - XMRIG_THREADS=${XMRIG_THREADS:-0}
-      - MONERO_NODE=${MONERO_NODE:-auto}
-      - P2POOL_STRATUM_PORT=${P2POOL_STRATUM_PORT:-3333}
-      - P2POOL_MONERO_PORT=${P2POOL_MONERO_PORT:-37889}
-    ports:
-      - "${P2POOL_STRATUM_PORT:-3333}:${P2POOL_STRATUM_PORT:-3333}"
-      - "${P2POOL_MONERO_PORT:-37889}:${P2POOL_MONERO_PORT:-37889}"
-      - "18080:18080"
-      - "18081:18081"
+      - WALLET_ADDRESS=${WALLET_ADDRESS:?WALLET_ADDRESS must be set}
     volumes:
-      - gupax-p2pool:/p2pool
-      - gupax-monero:/monero
-    mem_limit: 6g
+      - gupax-config:/home/miner/.local/state/gupax
+      - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero
+    ports:
+      - "6080:6080"   # noVNC web interface
+      - "5900:5900"   # VNC server (optional)
+      - "3333:3333"   # P2Pool stratum server
+      - "37889:37889" # P2Pool Monero node ZMQ
+      - "18080:18080" # Monero P2P
+      - "18081:18081" # Monero RPC
+      - "18082:18082" # Monero RPC ZMQ
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-    healthcheck:
-      test: ["CMD", "nc", "-z", "127.0.0.1", "3333"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
 
 volumes:
-  gupax-p2pool:
-    driver: local
+  gupax-config:
   gupax-monero:
-    driver: local
