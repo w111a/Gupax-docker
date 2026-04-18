@@ -5,9 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        P2POOL_VERSION: ${P2POOL_VERSION:-v4.14}
+        P2POOL_SHA256: ${P2POOL_SHA256:-e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01}
+        XMRIG_VERSION: ${XMRIG_VERSION:-6.26.0}
+        XMRIG_SHA256: ${XMRIG_SHA256:-fc6f8ae5f64e4f17481f7e3be29a1c56949f216a998414188003eae1db20c9e5}
     image: w111a/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped
+    stop_grace_period: 30s
     environment:
       - WALLET_ADDRESS=${WALLET_ADDRESS:?Please set WALLET_ADDRESS in .env or docker compose command}
       - P2POOL_MINI=${P2POOL_MINI:-true}
@@ -23,12 +29,18 @@ services:
     volumes:
       - gupax-p2pool:/p2pool
       - gupax-monero:/monero
-    mem_limit: 4g
+    mem_limit: 6g
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "3333"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   gupax-p2pool:

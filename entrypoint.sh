@@ -15,6 +15,27 @@ set -euo pipefail
 : "${MONERO_NODE:=auto}"
 : "${MONERO_RPC_PORT:=18081}"
 
+P2POOL_PID=
+XMRIG_PID=
+
+# --- Cleanup function ---
+cleanup() {
+    echo "[*] Caught signal, shutting down gracefully..."
+    if [[ -n "$P2POOL_PID" ]] && kill -0 "$P2POOL_PID" 2>/dev/null; then
+        kill -TERM "$P2POOL_PID" 2>/dev/null || true
+        wait "$P2POOL_PID" 2>/dev/null || true
+    fi
+    if [[ -n "$XMRIG_PID" ]] && kill -0 "$XMRIG_PID" 2>/dev/null; then
+        kill -TERM "$XMRIG_PID" 2>/dev/null || true
+        wait "$XMRIG_PID" 2>/dev/null || true
+    fi
+    echo "[*] Cleanup complete, exiting."
+    exit 0
+}
+
+# --- Register signal handlers ---
+trap cleanup SIGTERM SIGINT SIGQUIT
+
 P2POOL_ARGS=()
 XMRIG_ARGS=()
 
@@ -90,10 +111,10 @@ fi
 # --- Start XMRig in foreground ---
 echo "[*] Starting XMRig..."
 xmrig "${XMRIG_ARGS[@]}" &
+XMRIG_PID=$!
 
 # --- Wait for any process to exit ---
 wait -n 2>/dev/null || wait
 
 echo "[!] A process exited unexpectedly. Shutting down..."
-kill "$P2POOL_PID" 2>/dev/null || true
-exit 1
+cleanup

@@ -1,97 +1,68 @@
 # =============================================================================
-# Gupax-docker — Multi-stage Dockerfile
+# Gupax-docker — Single-stage Dockerfile with pre-built static binaries
 # Runs P2Pool + XMRig for decentralized Monero mining
 #
-# Build args (override with --build-arg):
-#   P2POOL_VERSION  — P2Pool branch or tag (default: master)
-#   XMRIG_VERSION   — XMRig branch or tag (default: main)
+# Build args:
+#   P2POOL_VERSION    — P2Pool release tag (default: v4.14)
+#   P2POOL_SHA256     — SHA256 checksum for P2Pool binary (required for verification)
+#   XMRIG_VERSION     — XMRig release tag (default: 6.26.0)
+#   XMRIG_SHA256      — SHA256 checksum for XMRig binary (required for verification)
 #
 # Example:
-#   docker build --build-arg P2POOL_VERSION=master --build-arg XMRIG_VERSION=main .
+#   docker build --build-arg P2POOL_VERSION=v4.14 --build-arg P2POOL_SHA256=<hash> .
 # =============================================================================
 
-# Global build args — must be redeclared in each stage for RUN commands to access them
-ARG P2POOL_VERSION=master
-ARG XMRIG_VERSION=main
-
-# ---------------------------------------------------------------------------
-# Stage 1: Build P2Pool from source
-# P2Pool repo: https://github.com/SChernykh/p2pool
-# Default branch: master
-# ---------------------------------------------------------------------------
-FROM ubuntu:22.04 AS p2pool-builder
-
-# Redeclare ARG so it is available in RUN commands within this stage
-ARG P2POOL_VERSION=master
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    build-essential \
-    cmake \
-    git \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    libuv1-dev \
-    libzmq3-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-ca-certificates
-
-# Clone P2Pool — default branch is "master"
-RUN git clone --branch ${P2POOL_VERSION} --depth 1 https://github.com/SChernykh/p2pool.git /p2pool-src && echo "Cloned P2Pool ref: ${P2POOL_VERSION}"
-
-WORKDIR /p2pool-src/build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
-
-# ---------------------------------------------------------------------------
-# Stage 2: Build XMRig from source
-# XMRig repo: https://github.com/xmrig/xmrig
-# Default branch: main
-# ---------------------------------------------------------------------------
-FROM ubuntu:22.04 AS xmrig-builder
-
-# Redeclare ARG so it is available in RUN commands within this stage
-ARG XMRIG_VERSION=main
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    build-essential \
-    cmake \
-    git \
-    libhwloc-dev \
-    libssl-dev \
-    libuv1-dev \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-ca-certificates
-
-# Clone XMRig — default branch is "main" (NOT "master")
-RUN git clone --branch ${XMRIG_VERSION} --depth 1 https://github.com/xmrig/xmrig.git /xmrig-src && echo "Cloned XMRig ref: ${XMRIG_VERSION}"
-
-WORKDIR /xmrig-src/build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release && make -j$(nproc)
-
-# ---------------------------------------------------------------------------
-# Stage 3: Runtime image
-# ---------------------------------------------------------------------------
-FROM ubuntu:22.04 AS runtime
+FROM ubuntu:22.04
 
 LABEL maintainer="w111a"
 LABEL description="Gupax-docker: P2Pool + XMRig for decentralized Monero mining"
 LABEL org.opencontainers.image.source="https://github.com/w111a/Gupax-docker"
 
+# Build arguments with defaults
+ARG P2POOL_VERSION=v4.14
+ARG P2POOL_SHA256
+ARG XMRIG_VERSION=6.26.0
+ARG XMRIG_SHA256
+
+# URLs for pre-built static binaries
+ENV P2POOL_URL="https://github.com/SChernykh/p2pool/releases/download/${P2POOL_VERSION}/p2pool-${P2POOL_VERSION}-linux-x64.tar.gz" \
+    XMRIG_URL="https://github.com/xmrig/xmrig/releases/download/v${XMRIG_VERSION}/xmrig-${XMRIG_VERSION}-linux-static-x64.tar.gz"
+
+# Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     libhwloc15 \
     libssl3 \
     libuv1 \
-    libzmq5 \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates \
     && groupadd -r miner \
     && useradd -r -g miner -m -d /home/miner miner
 
-# Copy built binaries
-COPY --from=p2pool-builder /p2pool-src/build/p2pool /usr/local/bin/p2pool
-COPY --from=xmrig-builder /xmrig-src/build/xmrig /usr/local/bin/xmrig
+# Download, verify, and extract P2Pool
+WORKDIR /tmp/p2pool
+RUN set -eux; \
+    curl -fsSL "$P2POOL_URL" -o p2pool.tar.gz; \
+    printf '%s  %s\n' "$P2POOL_SHA256" "p2pool.tar.gz" | sha256sum --check --status; \
+    tar -xzf p2pool.tar.gz --strip-components=1; \
+    rm p2pool.tar.gz; \
+    chmod +x p2pool
+
+# Download, verify, and extract XMRig
+WORKDIR /tmp/xmrig
+RUN set -eux; \
+    curl -fsSL "$XMRIG_URL" -o xmrig.tar.gz; \
+    printf '%s  %s\n' "$XMRIG_SHA256" "xmrig.tar.gz" | sha256sum --check --status; \
+    tar -xzf xmrig.tar.gz --strip-components=1; \
+    rm xmrig.tar.gz; \
+    chmod +x xmrig
+
+# Copy binaries to final location
+RUN mv /tmp/p2pool/p2pool /usr/local/bin/ && \
+    mv /tmp/xmrig/xmrig /usr/local/bin/ && \
+    rm -rf /tmp/p2pool /tmp/xmrig
 
 # Create data directories
 RUN mkdir -p /p2pool /monero && chown -R miner:miner /p2pool /monero
