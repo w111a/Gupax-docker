@@ -38,7 +38,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           build-args: |
             P2POOL_VERSION=v4.14
             P2POOL_SHA256=e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01
