@@ -1,5 +1,3 @@
-test
-
 > ⚠️ **WORK IN PROGRESS — NOT READY FOR USE** ⚠️
 >
 > This project is under active development and is **not yet functional**. Do not use it for mining or in production. Features may be incomplete, broken, or change at any time. Check back later or star the repo for updates.
