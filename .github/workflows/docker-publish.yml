@@ -40,8 +40,10 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
-            P2POOL_VERSION=master
-            XMRIG_VERSION=master
+            P2POOL_VERSION=v4.14
+            P2POOL_SHA256=e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01
+            XMRIG_VERSION=6.26.0
+            XMRIG_SHA256=fc6f8ae5f64e4f17481f7e3be29a1c56949f216a998414188003eae1db20c9e5
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
