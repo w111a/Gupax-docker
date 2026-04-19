@@ -3,9 +3,9 @@
 # Gupax GUI for P2Pool + XMRig Monero mining
 # Self-contained with noVNC — access via web browser at http://localhost:6080
 #
-# Build args:
-#   GUPAX_VERSION  — Gupax release tag (default: v2.0.1)
-#   GUPAX_SHA256    — SHA256 checksum for Gupax binary (required for verification)
+# Build args (required):
+#   GUPAX_VERSION  — Gupax release tag (auto-detected by CI)
+#   GUPAX_SHA256   — SHA256 checksum for Gupax binary (auto-detected by CI)
 #
 # Ports:
 #   6080 — noVNC web interface (connect your browser here)
@@ -21,10 +21,21 @@ ENV TZ=UTC
 LABEL maintainer="w111a"
 LABEL description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled)"
 LABEL org.opencontainers.image.source="https://github.com/w111a/Gupax-docker"
+LABEL org.opencontainers.image.version="${GUPAX_VERSION}"
+LABEL guax.version="${GUPAX_VERSION}"
+LABEL guax.sha256="${GUPAX_SHA256}"
 
-# Build arguments
-ARG GUPAX_VERSION=v2.0.1
-ARG GUPAX_SHA256=67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5
+# Build arguments — values injected by CI workflow
+ARG GUPAX_VERSION
+ARG GUPAX_SHA256
+
+# Fail fast if version/sha not provided
+RUN if [ -z "$GUPAX_VERSION" ] || [ -z "$GUPAX_SHA256" ]; then \
+      echo "ERROR: GUPAX_VERSION and GUPAX_SHA256 must be set via --build-arg"; \
+      echo "  GUPAX_VERSION=$GUPAX_VERSION"; \
+      echo "  GUPAX_SHA256=$GUPAX_SHA256"; \
+      exit 1; \
+    fi
 
 # Gupax release URL
 ENV GUPAX_URL="https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/gupax-${GUPAX_VERSION}-linux-x64.tar.gz"
