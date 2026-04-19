@@ -43,11 +43,6 @@ jobs:
           echo "GUPAX_VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "GUPAX_SHA256=$SHA" >> $GITHUB_OUTPUT
 
-      - name: Extract version without v prefix
-        id: version
-        run: |
-          echo "VERSION_STRIPPED=${GUPAX_VERSION#v}" >> $GITHUB_OUTPUT
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -60,7 +55,7 @@ jobs:
             GUPAX_SHA256=${{ steps.detect.outputs.GUPAX_SHA256 }}
           tags: |
             ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION_STRIPPED }}
+            ${{ env.IMAGE_NAME }}:${{ steps.detect.outputs.GUPAX_VERSION }}
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=min
