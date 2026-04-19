@@ -62,12 +62,12 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64
-          build-args:
-            - GUPAX_VERSION=${{ needs.detect-version.outputs.guax_version }}
-            - GUPAX_SHA256=${{ needs.detect-version.outputs.guax_sha256 }}
-          tags:
-            - ${{ env.IMAGE_NAME }}:latest
-            - ${{ env.IMAGE_NAME }}:${{ needs.detect-version.outputs.guax_version }}
-            - ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: |
+            GUPAX_VERSION=${{ needs.detect-version.outputs.guax_version }}
+            GUPAX_SHA256=${{ needs.detect-version.outputs.guax_sha256 }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ needs.detect-version.outputs.guax_version }}
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=min
