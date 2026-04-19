@@ -11,29 +11,7 @@ env:
   GUPAX_REPO: gupax-io/gupax
 
 jobs:
-  detect-version:
-    name: Detect latest Gupax version
-    runs-on: ubuntu-latest
-    outputs:
-      guax_version: ${{ steps.version.outputs.GUPAX_VERSION }}
-      guax_sha256: ${{ steps.sha256.outputs.GUPAX_SHA256 }}
-    steps:
-      - name: Fetch latest Gupax version
-        id: version
-        run: |
-          VERSION=$(curl -s https://api.github.com/repos/${{ env.GUPAX_REPO }}/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
-          echo "GUPAX_VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Detected Gupax version: $VERSION"
-
-      - name: Fetch SHA256 for linux-x64 binary
-        id: sha256
-        run: |
-          SHA=$(curl -s https://github.com/${{ env.GUPAX_REPO }}/releases/download/${{ steps.version.outputs.GUPAX_VERSION }}/SHA256SUMS | grep 'linux-x64.tar.gz' | awk '{print $1}')
-          echo "GUPAX_SHA256=$SHA" >> $GITHUB_OUTPUT
-          echo "SHA256: $SHA"
-
   build-and-push:
-    needs: detect-version
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,6 +33,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Detect Gupax version and SHA256
+        id: detect
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/${{ env.GUPAX_REPO }}/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
+          echo "Detected Gupax version: $VERSION"
+          SHA=$(curl -s https://github.com/${{ env.GUPAX_REPO }}/releases/download/$VERSION/SHA256SUMS | grep 'linux-x64.tar.gz' | awk '{print $1}')
+          echo "SHA256: $SHA"
+          echo "GUPAX_VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "GUPAX_SHA256=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Extract version without v prefix
+        id: version
+        run: |
+          echo "VERSION_STRIPPED=${GUPAX_VERSION#v}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -63,11 +56,11 @@ jobs:
           push: true
           platforms: linux/amd64
           build-args: |
-            GUPAX_VERSION=${{ needs.detect-version.outputs.guax_version }}
-            GUPAX_SHA256=${{ needs.detect-version.outputs.guax_sha256 }}
+            GUPAX_VERSION=${{ steps.detect.outputs.GUPAX_VERSION }}
+            GUPAX_SHA256=${{ steps.detect.outputs.GUPAX_SHA256 }}
           tags: |
             ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ needs.detect-version.outputs.guax_version }}
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.VERSION_STRIPPED }}
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=min
