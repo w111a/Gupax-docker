@@ -14,6 +14,10 @@
 
 FROM ubuntu:22.04
 
+# Prevent interactive tzdata prompt from blocking the build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 LABEL maintainer="w111a"
 LABEL description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled)"
 LABEL org.opencontainers.image.source="https://github.com/w111a/Gupax-docker"
