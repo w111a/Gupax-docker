@@ -50,7 +50,7 @@ RUN VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/la
     && mv $(find . -name 'gupax' -type f) /usr/local/bin/gupax \
     && chmod +x /usr/local/bin/gupax \
     && rm -rf /tmp/gupax \
-    && echo "$VERSION" > /tmp/guax_version \
+    && echo "${VERSION#v}" > /tmp/guax_version \
     && echo "$SHA" > /tmp/guax_sha256
 
 # Labels
