@@ -5,9 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        GUPAX_VERSION: ${GUPAX_VERSION:-v2.0.1}
-        GUPAX_SHA256: ${GUPAX_SHA256:-67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5}
+      # GUPAX_VERSION and GUPAX_SHA256 are detected automatically at build time
     image: ghcr.io/w111a/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped

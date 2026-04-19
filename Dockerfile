@@ -3,65 +3,64 @@
 # Gupax GUI for P2Pool + XMRig Monero mining
 # Self-contained with noVNC — access via web browser at http://localhost:6080
 #
-# Build args:
-#   GUPAX_VERSION  — Gupax release tag (default: v2.0.1)
-#   GUPAX_SHA256    — SHA256 checksum for Gupax binary (required for verification)
-#
-# Ports:
-#   6080 — noVNC web interface (connect your browser here)
-#   5900 — VNC server (optional, for direct VNC access)
+# Version auto-detected at build time via GitHub API — no build args needed
 # =============================================================================
 
 FROM ubuntu:22.04
 
-LABEL maintainer="w111a"
-LABEL description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled)"
-LABEL org.opencontainers.image.source="https://github.com/w111a/Gupax-docker"
-
-# Build arguments
-ARG GUPAX_VERSION=v2.0.1
-ARG GUPAX_SHA256=67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5
-
-# Gupax release URL
-ENV GUPAX_URL="https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/gupax-${GUPAX_VERSION}-linux-x64.tar.gz"
+# Prevent interactive tzdata prompt from blocking the build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 # Xvfb display for headless GUI
 ENV DISPLAY=:1
 
 # Install X11 (for Xvfb), VNC, noVNC, and Gupax runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # X11 for Xvfb (virtual framebuffer)
     xvfb \
     x11-xserver-utils \
-    # VNC server
     x11vnc \
-    # noVNC / WebSocket proxy
     novnc \
     websockify \
-    # Gupax GUI dependencies (OpenGL/audio)
     libgl1-mesa-glx \
     libgl1 \
     libasound2 \
     libpulse0 \
-    # Utilities
     ca-certificates \
     curl \
     gosu \
+    python3 \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
     && useradd -r -g miner -m -d /home/miner miner
 
-# Download, verify, and extract Gupax
+# Detect latest Gupax version, fetch SHA256, download, verify, and install
 WORKDIR /tmp/gupax
-RUN set -eux; \
-    curl -fsSL "$GUPAX_URL" -o gupax.tar.gz; \
-    printf '%s  %s\n' "$GUPAX_SHA256" "gupax.tar.gz" | sha256sum --check --status; \
-    tar -xzf gupax.tar.gz; \
-    GUPATH=$(find . -name 'gupax' -type f); \
-    mv "$GUPATH" /usr/local/bin/gupax; \
-    chmod +x /usr/local/bin/gupax; \
-    rm -rf /tmp/gupax
+RUN VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/latest \
+           | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])") \
+    && echo "Detected Gupax version: $VERSION" \
+    && SHA=$(curl -fsSL "https://github.com/gupax-io/gupax/releases/download/$VERSION/SHA256SUMS" \
+           | grep 'linux-x64.tar.gz' | awk '{print $1}') \
+    && echo "SHA256: $SHA" \
+    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/$VERSION/gupax-${VERSION}-linux-x64.tar.gz" \
+           -o gupax.tar.gz \
+    && printf '%s  %s\n' "$SHA" "gupax.tar.gz" | sha256sum --check --status \
+    && tar -xzf gupax.tar.gz \
+    && mv $(find . -name 'gupax' -type f) /usr/local/bin/gupax \
+    && chmod +x /usr/local/bin/gupax \
+    && rm -rf /tmp/gupax \
+    && echo "$VERSION" > /tmp/guax_version \
+    && echo "$SHA" > /tmp/guax_sha256
+
+# Labels
+# Note: version label uses v-prefixed tag (v2.0.1) per upstream convention
+LABEL maintainer="w111a" \
+      description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled)" \
+      org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
+      org.opencontainers.image.version="$(cat /tmp/guax_version)" \
+      guax.version="$(cat /tmp/guax_version)" \
+      guax.sha256="$(cat /tmp/guax_sha256)"
 
 # Create Gupax state directory
 RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
@@ -70,19 +69,12 @@ RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Ports exposed:
-# 6080 — noVNC web interface (HTTP + WebSocket)
-# 5900 — VNC server (for direct VNC clients)
 EXPOSE 6080 5900
-
-# Mining ports (for P2Pool/XMRig-proxy)
 EXPOSE 3333 37889 18080 18081 18082
 
-# Persistent Gupax state
 VOLUME ["/home/miner/.local/state/gupax"]
 
 USER miner
 WORKDIR /home/miner
 
-# Run the startup script which launches Xvfb + x11vnc + websockify + Gupax
 ENTRYPOINT ["/usr/local/bin/start.sh"]
