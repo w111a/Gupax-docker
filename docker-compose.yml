@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # GUPAX_VERSION and GUPAX_SHA256 injected automatically by workflow
+      # GUPAX_VERSION and GUPAX_SHA256 are detected automatically at build time
     image: ghcr.io/w111a/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped
