@@ -33,6 +33,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Detect Gupax version for tagging
+        id: version
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/gupax-io/gupax/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
+          VERSION_STRIPPED="${VERSION#v}"
+          echo "Detected Gupax version: $VERSION (tag: $VERSION_STRIPPED)"
+          # Write tags as newline-delimited string to GITHUB_ENV for use in build step
+          TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION_STRIPPED"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -40,11 +50,6 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64
-          build-args: |
-            GUPAX_VERSION=v2.0.1
-            GUPAX_SHA256=67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ env.TAGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

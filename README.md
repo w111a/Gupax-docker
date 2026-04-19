@@ -61,10 +61,10 @@ Click **Connect** on the noVNC page — no password required by default.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `WALLET_ADDRESS` | ✅ Yes | — | Your Monero wallet address for mining payouts |
-| `GUPAX_VERSION` | No | v2.0.1 | Gupax version |
-| `GUPAX_SHA256` | No | (checksum) | Gupax SHA256 for verification |
+| `WALLET_ADDRESS` | Yes | — | Your Monero wallet address for mining payouts |
 | `MONERO_DATA_PATH` | No | gupax-monero | Path to Monero blockchain data |
+
+> **Note:** `GUPAX_VERSION` and `GUPAX_SHA256` are managed automatically by the CI workflow — no manual configuration needed. The Docker image is always built with the latest detected upstream Gupax version.
 
 ### Ports
 
