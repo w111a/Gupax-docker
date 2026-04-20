@@ -90,14 +90,28 @@ Click **Connect** on the noVNC page — no password required by default.
 
 ### Ports
 
-| Port | Protocol | Service | Description |
-| 6080 | HTTP | noVNC | **Web interface** — connect your browser here |
-| 5900 | VNC | x11vnc | Direct VNC access (optional) |
-| 3333 | TCP | P2Pool | Stratum server for miners |
-| 37889 | TCP | P2Pool | Monero node ZMQ port |
-| 18080 | TCP | Monerod | Monero P2P network port |
-| 18081 | TCP | Monerod | Monero RPC port |
-| 18082 | TCP | Monerod | Monero RPC ZMQ |
+**Access (user-facing)**
+
+| Port | Service | Description |
+|---|---|---|
+| `6080` | noVNC | **Web UI** — open in your browser to use Gupax |
+| `5900` | VNC | Direct VNC client access (optional) |
+
+**P2Pool (mining stratum)**
+
+| Port | Service | Description |
+|---|---|---|
+| `3333` | P2Pool | Stratum server — external miners connect here |
+| `37889` | P2Pool | Monero node ZMQ |
+
+**Monero node (monerod)**
+
+| Port | Service | Description |
+|---|---|---|
+| `18080` | monerod | P2P network — connects to other Monero nodes |
+| `18081` | monerod | RPC — JSON-RPC API for Gupax |
+| `18082` | monerod | RPC ZMQ — subscription-based block updates |
+
 
 ### Volumes
 
