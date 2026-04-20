@@ -6,7 +6,7 @@
 
 - [x] **Working Dockerfile** — Gupax binary with Xvfb + x11vnc + noVNC
 - [x] **noVNC web access** — Container accessible via browser at http://localhost:6080
-- [x] **Wallet address configuration** — Accept `WALLET_ADDRESS` as a required env var
+- [x] **Wallet address configuration** — Set inside Gupax GUI (Node tab), not as Docker env var
 - [x] **docker-compose.yml** — Working compose with Gupax, noVNC, and volumes
 - [x] **README.md** — Clear documentation with Quick Start and troubleshooting
 
