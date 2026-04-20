@@ -6,7 +6,6 @@ on:
     branches:
       - main
     paths:
-      # Only trigger when Docker-related files change (not README, docs, etc.)
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'start.sh'
@@ -45,7 +44,7 @@ jobs:
         run: |
           docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Detect version tags
+      - name: Get image version
         id: version
         run: |
           VERSION=$(docker inspect ${{ env.IMAGE_NAME }}:latest \
@@ -53,22 +52,22 @@ jobs:
           if [ -z "$VERSION" ]; then
             VERSION="latest"
           fi
-          echo "Gupax version: $VERSION"
+          echo "Detected Gupax version: $VERSION"
+          # Remove any trailing newlines/whitespace
+          VERSION=$(echo "$VERSION" | tr -d '[:space:]')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Retag and push to Docker Hub
+      - name: Tag and push to Docker Hub
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:latest"
+          echo "Tagging as: libre7/gupax-docker:${VERSION}"
           docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:${VERSION}"
-          docker push "libre7/gupax-docker:latest"
+          docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:latest"
           docker push "libre7/gupax-docker:${VERSION}"
-          echo "Pushed: libre7/gupax-docker:latest"
-          echo "Pushed: libre7/gupax-docker:${VERSION}"
+          docker push "libre7/gupax-docker:latest"
 
-      - name: Push SHA tag for traceability
+      - name: Push SHA tag
         run: |
           SHA_TAG="libre7/gupax-docker:${{ github.sha }}"
           docker tag ${{ env.IMAGE_NAME }}:latest "$SHA_TAG"
           docker push "$SHA_TAG"
-          echo "Pushed SHA tag: $SHA_TAG"
