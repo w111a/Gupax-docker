@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpulse0 \
     ca-certificates \
     curl \
-    gosu \
+    libxkbcommon-x11-0 \
     python3 \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
