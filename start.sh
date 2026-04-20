@@ -57,13 +57,12 @@ if ! kill -0 $X11VNC_PID 2>/dev/null; then
 fi
 echo "[+] x11vnc started on port 5900"
 
-# Create a redirect index.html in a writable location (noVNC web root is owned by root)
-mkdir -p /usr/local/share/novnc
-echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=vnc.html"></head><body><a href="vnc.html">Click to connect</a></body></html>' > /usr/local/share/novnc/index.html
+# Create index.html redirect in the noVNC directory (now owned by miner)
+echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=vnc.html"></head><body><a href="vnc.html">Click to connect</a></body></html>' > /usr/share/novnc/index.html
 
-# Start noVNC — serve from /usr/local/share/novnc (writable, miner-owned)
+# Start noVNC
 echo "[*] Starting noVNC on port 6080..."
-websockify --web /usr/local/share/novnc 6080 localhost:5900 &
+websockify --web /usr/share/novnc 6080 localhost:5900 &
 WEBSOCKIFY_PID=$!
 
 sleep 1
