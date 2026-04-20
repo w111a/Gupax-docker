@@ -10,8 +10,6 @@ services:
     container_name: gupax
     restart: unless-stopped
     stop_grace_period: 30s
-    environment:
-      - WALLET_ADDRESS=${WALLET_ADDRESS:?WALLET_ADDRESS must be set}
     volumes:
       - gupax-config:/home/miner/.local/state/gupax
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero
