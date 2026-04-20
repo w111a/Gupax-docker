@@ -123,7 +123,7 @@ LABEL maintainer="w111a" \
 
 # Create Gupax state directory and symlink bundled binaries
 # Gupax expects binaries relative to its state dir (e.g. ~/.local/state/gupax/xmrig-proxy/xmrig-proxy)
-RUN mkdir -p /home/miner/.local/state/gupax \\
+RUN mkdir -p /home/miner/.local/state/gupax/node /home/miner/.local/state/gupax/xmrig /home/miner/.local/state/gupax/p2pool /home/miner/.local/state/gupax/xmrig-proxy \
     && ln -s /usr/local/bin/gupax/node/monerod /home/miner/.local/state/gupax/node/monerod \\
     && ln -s /usr/local/bin/gupax/xmrig/xmrig /home/miner/.local/state/gupax/xmrig/xmrig \\
     && ln -s /usr/local/bin/gupax/p2pool/p2pool /home/miner/.local/state/gupax/p2pool/p2pool \\
