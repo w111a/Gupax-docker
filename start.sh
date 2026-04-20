@@ -57,9 +57,9 @@ if ! kill -0 $X11VNC_PID 2>/dev/null; then
 fi
 echo "[+] x11vnc started on port 5900"
 
-# Start websockify (WebSocket proxy for noVNC)
-echo "[*] Starting websockify on port 6080..."
-websockify --web /usr/share/novnc 6080 localhost:5900 &
+# Start noVNC web interface using the official launch.sh wrapper
+echo "[*] Starting noVNC on port 6080..."
+/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080 &
 WEBSOCKIFY_PID=$!
 
 sleep 1
@@ -70,7 +70,7 @@ if ! kill -0 $WEBSOCKIFY_PID 2>/dev/null; then
     kill $X11VNC_PID $XVFB_PID 2>/dev/null
     exit 1
 fi
-echo "[+] websockify started on port 6080"
+echo "[+] noVNC started on port 6080"
 echo ""
 echo "[*] noVNC web interface ready at http://localhost:6080"
 echo "[*] Gupax GUI should appear automatically"
