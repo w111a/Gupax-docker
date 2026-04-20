@@ -43,7 +43,6 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 
 | Field | Required | Default | Description |
 |---|---|---|---|
-| `WALLET_ADDRESS` | Yes | — | Your Monero wallet address for payouts |
 | `SCREEN_RESOLUTION` | No | `1920x1080x24` | Display resolution for Gupax GUI |
 
 ## Accessing the GUI
@@ -57,7 +56,6 @@ The container runs a **noVNC web interface** — no X11 or VNC client needed:
 ## Ports
 
 | Port | Service | Description |
-|---|---|---|
 | 6080 | noVNC | **Web interface** — connect your browser here |
 | 5900 | VNC | Direct VNC access (optional) |
 | 3333 | P2Pool | Stratum server for external miners |
