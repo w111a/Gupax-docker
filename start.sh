@@ -57,10 +57,6 @@ if ! kill -0 $X11VNC_PID 2>/dev/null; then
 fi
 echo "[+] x11vnc started on port 5900"
 
-# Create index.html redirect so http://host:6080/ goes to the noVNC connect page
-echo '[html][head][meta http-equiv="refresh" content="0;url=vnc.html"][/head][body][a href="vnc.html"]noVNC[/a][/body][/html]' \
-    | sed 's/\[/</g; s/\]/>/g' > /usr/share/novnc/index.html
-
 # Start noVNC web interface using the official launch.sh wrapper
 echo "[*] Starting noVNC on port 6080..."
 /usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080 &

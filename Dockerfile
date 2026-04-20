@@ -100,6 +100,9 @@ LABEL maintainer="w111a" \
 # Create Gupax state directory
 RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
 
+# Create index.html redirect so http://host:6080/ goes to the noVNC connect page
+RUN echo '<html><head><meta http-equiv="refresh" content="0;url=vnc.html"></head><body><a href="vnc.html">noVNC</a></body></html>' > /usr/share/novnc/index.html
+
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
