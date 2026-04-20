@@ -35,32 +35,67 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && groupadd -r miner \
     && useradd -r -g miner -m -d /home/miner miner
 
-# Detect latest Gupax version, fetch SHA256, download, verify, and install
-WORKDIR /tmp/gupax
-RUN VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/latest \
-           | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])") \
-    && echo "Detected Gupax version: $VERSION" \
-    && SHA=$(curl -fsSL "https://github.com/gupax-io/gupax/releases/download/$VERSION/SHA256SUMS" \
-           | grep 'linux-x64.tar.gz' | awk '{print $1}') \
-    && echo "SHA256: $SHA" \
-    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/$VERSION/gupax-${VERSION}-linux-x64.tar.gz" \
-           -o gupax.tar.gz \
-    && printf '%s  %s\n' "$SHA" "gupax.tar.gz" | sha256sum --check --status \
+# =============================================================================
+# Install bundled Gupax (Gupax + P2Pool + XMRig)
+# Structure: /usr/local/bin/gupax/
+#   gupax/          — Gupax v2.0.1 GUI
+#   gupax/p2pool/   — P2Pool v4.14 binary + docs
+#   gupax/xmrig/    — XMRig v6.26.0 binary + config
+# Gupax finds binaries relative to its own executable location.
+# =============================================================================
+
+WORKDIR /tmp/install
+
+# --- Gupax v2.0.1 ---
+RUN echo "67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5  gupax.tar.gz" > gupax.sha256 \
+    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/v2.0.1/gupax-v2.0.1-linux-x64.tar.gz" -o gupax.tar.gz \
+    && sha256sum --check gupax.sha256 \
     && tar -xzf gupax.tar.gz \
-    && mv $(find . -name 'gupax' -type f) /usr/local/bin/gupax \
-    && chmod +x /usr/local/bin/gupax \
-    && rm -rf /tmp/gupax \
-    && echo "${VERSION#v}" > /tmp/guax_version \
-    && echo "$SHA" > /tmp/guax_sha256
+    && mkdir -p /usr/local/bin/gupax \
+    && mv gupax-v2.0.1-linux-x64/gupax /usr/local/bin/gupax/gupax \
+    && rm -rf gupax.tar.gz gupax.sha256 gupax-v2.0.1-linux-x64
+
+# --- P2Pool v4.14 ---
+# SHA256: e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01
+RUN echo "e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01  p2pool.tar.gz" > p2pool.sha256 \
+    && curl -fsSL "https://github.com/SChernykh/p2pool/releases/download/v4.14/p2pool-v4.14-linux-x64.tar.gz" -o p2pool.tar.gz \
+    && sha256sum --check p2pool.sha256 \
+    && tar -xzf p2pool.tar.gz \
+    && mkdir -p /usr/local/bin/gupax/p2pool \
+    && mv p2pool-v4.14-linux-x64/p2pool /usr/local/bin/gupax/p2pool/ \
+    && mv p2pool-v4.14-linux-x64/README.md /usr/local/bin/gupax/p2pool/ \
+    && mv p2pool-v4.14-linux-x64/LICENSE /usr/local/bin/gupax/p2pool/ \
+    && rm -rf p2pool.tar.gz p2pool.sha256 p2pool-v4.14-linux-x64
+
+# --- XMRig v6.26.0 (jammy build for Ubuntu 22.04) ---
+# SHA256: ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087
+RUN echo "ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087  xmrig.tar.gz" > xmrig.sha256 \
+    && curl -fsSL "https://github.com/xmrig/xmrig/releases/download/v6.26.0/xmrig-6.26.0-jammy-x64.tar.gz" -o xmrig.tar.gz \
+    && sha256sum --check xmrig.sha256 \
+    && tar -xzf xmrig.tar.gz \
+    && mkdir -p /usr/local/bin/gupax/xmrig \
+    && mv xmrig-6.26.0-jammy-x64/xmrig /usr/local/bin/gupax/xmrig/ \
+    && mv xmrig-6.26.0-jammy-x64/config.json /usr/local/bin/gupax/xmrig/ \
+    && rm -rf xmrig.tar.gz xmrig.sha256 xmrig-6.26.0-jammy-x64
+
+# --- Symlink gupax binary for easy access ---
+RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
+    && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig \
+    && rm -rf /tmp/install
+
+# Save version info
+RUN echo "v2.0.1" > /tmp/guax_version \
+    && echo "e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01" > /tmp/p2pool_sha256 \
+    && echo "ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087" > /tmp/xmrig_sha256
 
 # Labels
-# Note: version label uses v-prefixed tag (v2.0.1) per upstream convention
 LABEL maintainer="w111a" \
-      description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled)" \
+      description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, bundled binaries)" \
       org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
-      org.opencontainers.image.version="$(cat /tmp/guax_version)" \
-      guax.version="$(cat /tmp/guax_version)" \
-      guax.sha256="$(cat /tmp/guax_sha256)"
+      org.opencontainers.image.version="v2.0.1-bundle" \
+      guax.version="v2.0.1" \
+      p2pool.version="v4.14" \
+      xmrig.version="v6.26.0"
 
 # Create Gupax state directory
 RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
