@@ -80,6 +80,83 @@ Click **Connect** on the noVNC page — no password required by default.
 
 ---
 
+## 🖥️ Unraid Setup
+
+This section covers installing and running Gupax-docker on Unraid.
+
+### Prerequisites
+
+- A running Unraid server (v6.12+)
+- The [Community Applications](https://forums.unraid.net/topic/38582-plug-in-community-applications/) plugin installed
+
+### Installing via Community Applications (Recommended)
+
+1. Open the **Apps** tab in your Unraid web UI
+2. Search for **"gupax"** or **"monero mining"**
+3. Click **Install**
+4. Set **SCREEN_RESOLUTION** if needed (default: `1920x1080x24`)
+5. Click **Apply** and wait for the container to start
+
+### Installing via Template URL
+
+If Gupax-docker is not yet in the Community Applications store:
+
+1. Go to the **Docker** tab in your Unraid web UI
+2. Click **Add Container**
+3. Set the **Template URL** to:
+   ```
+   https://raw.githubusercontent.com/w111a/gupax-docker/main/templates/gupax-docker.xml
+   ```
+4. Fill in the required fields — only **SCREEN_RESOLUTION** is configurable
+5. Click **Apply**
+
+### Accessing the GUI
+
+Once the container is running:
+
+1. Open your browser and go to:
+   ```
+   http://your-unraid-ip:6080
+   ```
+2. Click **Connect** on the noVNC page — no password required
+3. The Gupax GUI will appear
+
+### Setting Your Wallet Address
+
+Inside the Gupax GUI:
+
+1. Go to the **Node tab** (or **Settings tab** depending on your Gupax version)
+2. Enter your Monero wallet address in the **Wallet Address** field
+3. Save the settings
+
+> **Note:** The wallet address is set inside the Gupax GUI itself — it is **not** a Docker environment variable or template field.
+
+### Ports on Unraid
+
+The following ports are exposed by default. You do not need to open all of them — only the ones you use:
+
+| Port | Service | Who needs it |
+|---|---|---|
+| `6080` | noVNC Web UI | **Everyone** — access Gupax in your browser |
+| `5900` | VNC | Optional — direct VNC clients |
+| `3333` | P2Pool Stratum | External miners connecting to your P2Pool |
+| `37889` | P2Pool ZMQ | External miners; leave at default |
+| `18080` | Monero P2P | Only if running a full Monero node (optional) |
+| `18081` | Monero RPC | Only if running a full Monero node (optional) |
+
+### Using Your Own Blockchain on Unraid
+
+If you have an existing Monero blockchain on your Unraid server:
+
+1. In the template, map your blockchain directory to `/home/miner/.bitmonero` as a volume
+2. Start the container once to ensure the path is created
+3. In the Gupax GUI, go to the **Node tab** and set the database path to:
+   ```
+   /home/miner/.bitmonero
+   ```
+
+---
+
 ## 🔧 Configuration
 
 ### Environment Variables
