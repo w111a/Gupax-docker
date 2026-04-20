@@ -39,25 +39,49 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 
 | Field | Required | Default | Description |
 |---|---|---|---|
-| `WALLET_ADDRESS` | ✅ Yes | — | Your Monero wallet address for payouts |
-| `P2POOL_MINI` | No | `true` | Use P2Pool mini sidechain (recommended) |
-| `XMRIG_THREADS` | No | `0` | CPU mining threads (0 = auto) |
-| `MONERO_NODE` | No | `auto` | Monero node: auto, local, or remote |
-| P2Pool Stratum Port | No | `3333` | Port for miners to connect |
-| P2Pool Monero Port | No | `37889` | P2Pool ZMQ port |
+| `WALLET_ADDRESS` | Yes | — | Your Monero wallet address for payouts |
+| `SCREEN_RESOLUTION` | No | `1920x1080x24` | Display resolution for Gupax GUI |
+
+## Accessing the GUI
+
+The container runs a **noVNC web interface** — no X11 or VNC client needed:
+
+- Open your browser to: `http://<your-unraid-ip>:6080`
+- Click **Connect** on the noVNC page — no password required by default
+- The Gupax GUI will appear in your browser
+
+## Ports
+
+| Port | Service | Description |
+|---|---|---|
+| 6080 | noVNC | **Web interface** — connect your browser here |
+| 5900 | VNC | Direct VNC access (optional) |
+| 3333 | P2Pool | Stratum server for external miners |
+| 37889 | P2Pool | Monero node ZMQ |
+| 18080 | Monerod | Monero P2P network |
+| 18081 | Monerod | Monero RPC |
 
 ## Volumes
 
-The template creates two persistent data directories under `/mnt/user/appdata/gupax-docker/`:
+The template creates two persistent directories under `/mnt/user/appdata/gupax/`:
 
-- `p2pool/` — P2Pool database and share data
+- `config/` — Gupax configuration, wallet, and state
 - `monero/` — Monero blockchain data
 
-## ⚠️ Important Notes
+## Using an Existing Blockchain
 
-- **You MUST set `WALLET_ADDRESS` before starting the container** — it will fail without it.
-- Mining cryptocurrency consumes significant electricity and may not be profitable.
-- For best results on Unraid, consider setting `XMRIG_THREADS` to less than your total CPU cores to leave resources for other Docker containers.
+If you already have a Monero blockchain synced:
+
+1. Start the container once so the volume is created
+2. Copy your blockchain to `/mnt/user/appdata/gupax/monero/`
+3. In the Gupax GUI, go to the **Node tab** and set the database path to:
+   ```
+   /home/miner/.bitmonero
+   ```
+
+## Resource Limits
+
+The template sets recommended limits of **4GB RAM** and **2 CPU cores**. Adjust these in the template if needed.
 
 ## Submitting to Community Applications
 

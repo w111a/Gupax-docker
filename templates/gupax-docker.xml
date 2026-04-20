@@ -8,7 +8,11 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/w111a/Gupax-docker/issues</Support>
   <Project>https://github.com/w111a/Gupax-docker</Project>
-  <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.&#13;&#10;&#13;&#10;Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.&#13;&#10;&#13;&#10;IMPORTANT: You MUST set your WALLET_ADDRESS before starting. Mining cryptocurrency consumes significant electricity.</Overview>
+  <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.
+
+Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
+
+IMPORTANT: You MUST set your WALLET_ADDRESS before starting. Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png</Icon>
@@ -27,6 +31,15 @@
       <Display>always</Display>
       <Required>true</Required>
       <Mask>never</Mask>
+    </Variable>
+    <Variable>
+      <Name>SCREEN_RESOLUTION</Name>
+      <Value>1920x1080x24</Value>
+      <Mode></Mode>
+      <Description>Display resolution for Gupax GUI inside the container (default: 1920x1080x24)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
     </Variable>
   </Environment>
 
@@ -52,7 +65,7 @@
       <HostPort>3333</HostPort>
       <ContainerPort>3333</ContainerPort>
       <Protocol>tcp</Protocol>
-      <Description>P2Pool Stratum - Connect your miners here</Description>
+      <Description>P2Pool Stratum - Connect external miners here</Description>
       <Display>advanced</Display>
     </Port>
     <Port>
@@ -76,6 +89,13 @@
       <Description>Monero RPC</Description>
       <Display>advanced</Display>
     </Port>
+    <Port>
+      <HostPort>18082</HostPort>
+      <ContainerPort>18082</ContainerPort>
+      <Protocol>tcp</Protocol>
+      <Description>Monero RPC ZMQ</Description>
+      <Display>hidden</Display>
+    </Port>
   </Ports>
 
   <!-- ============================================================ -->
@@ -86,21 +106,42 @@
       <HostDir>/mnt/user/appdata/gupax/config</HostDir>
       <ContainerDir>/home/miner/.local/state/gupax</ContainerDir>
       <Mode>rw</Mode>
-      <Description>Gupax configuration and state (persists settings)</Description>
+      <Description>Gupax configuration and state (wallet, settings persist here)</Description>
       <Display>always</Display>
     </Volume>
     <Volume>
       <HostDir>/mnt/user/appdata/gupax/monero</HostDir>
       <ContainerDir>/home/miner/.bitmonero</ContainerDir>
       <Mode>rw</Mode>
-      <Description>Monero blockchain data. IMPORTANT: In Gupax UI, go to Node tab and set database path to /home/miner/.bitmonero</Description>
+      <Description>Monero blockchain data. In Gupax UI, go to Node tab and set database path to /home/miner/.bitmonero</Description>
       <Display>always</Display>
     </Volume>
   </Volumes>
 
   <!-- ============================================================ -->
+  <!-- Resource Limits (recommended for Unraid)                    -->
+  <!-- ============================================================ -->
+  <Deploy>
+    <Resources>
+      <Limit>
+        <Memory>4096000</Memory>
+        <CPU>2</CPU>
+      </Limit>
+    </Resources>
+  </Deploy>
+
+  <!-- ============================================================ -->
   <!-- Restart Policy                                               -->
   <!-- ============================================================ -->
   <RestartPolicy>unless-stopped</RestartPolicy>
+
+  <!-- ============================================================ -->
+  <!-- Logging                                                      -->
+  <!-- ============================================================ -->
+  <LogFile></LogFile>
+  <LogDisplayFile>/dev/null</LogDisplayFile>
+  <LogReader>true</LogReader>
+  <LogMaxSize>10M</LogMaxSize>
+  <LogMaxFile>3</LogMaxFile>
 
 </Container>
