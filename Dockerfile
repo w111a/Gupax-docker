@@ -100,8 +100,9 @@ LABEL maintainer="w111a" \
 # Create Gupax state directory
 RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
 
-# Make noVNC directory writable by miner user (so index.html can be created at runtime)
-RUN chown -R miner:miner /usr/share/novnc
+# Create index.html redirect at build time (avoids any runtime permission issues)
+# This RUN executes as root, so we can write anywhere.
+RUN echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=vnc.html"></head><body><a href="vnc.html">Click to connect</a></body></html>' > /usr/share/novnc/index.html
 
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
