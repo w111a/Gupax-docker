@@ -48,32 +48,28 @@ jobs:
       - name: Detect version tags
         id: version
         run: |
-          # Get the Gupax version from the image label
           VERSION=$(docker inspect ${{ env.IMAGE_NAME }}:latest \
             --format '{{ index .Config.Labels "guax.version" }}')
           if [ -z "$VERSION" ]; then
             VERSION="latest"
           fi
           echo "Gupax version: $VERSION"
-          # Write tags as newline-delimited string
-          TAGS="libre7/gupax-docker:latest"'\'"$VERSION"
-          echo "TAGS<<EOF"'$'"TAGS<<EOF"'
-          libre7/gupax-docker:latest
-          libre7/gupax-docker:$VERSION
-          EOF
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "dockerhub_tag_latest=libre7/gupax-docker:latest" >> $GITHUB_OUTPUT
+          echo "dockerhub_tag_version=libre7/gupax-docker:$VERSION" >> $GITHUB_OUTPUT
 
       - name: Retag and push to Docker Hub
         run: |
-          for tag in ${{ env.TAGS }}; do
-            echo "Tagging and pushing: $tag"
-            docker tag ${{ env.IMAGE_NAME }}:latest "$tag"
-            docker push "$tag"
-          done
-        env:
-          TAGS: ${{ env.TAGS }}
+          docker tag ${{ env.IMAGE_NAME }}:latest "${{ steps.version.outputs.dockerhub_tag_latest }}"
+          docker tag ${{ env.IMAGE_NAME }}:latest "${{ steps.version.outputs.dockerhub_tag_version }}"
+          docker push "${{ steps.version.outputs.dockerhub_tag_latest }}"
+          docker push "${{ steps.version.outputs.dockerhub_tag_version }}"
+          echo "Pushed: ${{ steps.version.outputs.dockerhub_tag_latest }}"
+          echo "Pushed: ${{ steps.version.outputs.dockerhub_tag_version }}"
 
       - name: Push SHA tag for traceability
         run: |
           SHA_TAG="libre7/gupax-docker:${{ github.sha }}"
           docker tag ${{ env.IMAGE_NAME }}:latest "$SHA_TAG"
           docker push "$SHA_TAG"
+          echo "Pushed SHA tag: $SHA_TAG"
