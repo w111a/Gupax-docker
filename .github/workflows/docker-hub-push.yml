@@ -46,9 +46,15 @@ jobs:
 
       - name: Tag and push all
         run: |
+          VERSION=$(docker inspect ${{ env.IMAGE_NAME }}:latest \
+            --format '{{ index .Config.Labels "guax.version" }}')
+          if [ -z "$VERSION" ]; then
+            VERSION="latest"
+          fi
+          echo "Tagging as: libre7/gupax-docker:${VERSION}"
+          docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:${VERSION}"
           docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:latest
+          docker push "libre7/gupax-docker:${VERSION}" --quiet
           docker push libre7/gupax-docker:latest --quiet
-          docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:2.2.0
-          docker push libre7/gupax-docker:2.2.0 --quiet
           docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:${{ github.sha }}
           docker push libre7/gupax-docker:${{ github.sha }} --quiet
