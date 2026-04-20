@@ -48,7 +48,6 @@ cd Gupax-docker
 
 # 2. Copy and edit environment file
 cp .env.example .env
-# Edit .env and set your WALLET_ADDRESS
 
 # 3. Start the container
 docker compose up -d
