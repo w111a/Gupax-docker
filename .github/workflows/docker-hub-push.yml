@@ -55,17 +55,16 @@ jobs:
           fi
           echo "Gupax version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "dockerhub_tag_latest=libre7/gupax-docker:latest" >> $GITHUB_OUTPUT
-          echo "dockerhub_tag_version=libre7/gupax-docker:$VERSION" >> $GITHUB_OUTPUT
 
       - name: Retag and push to Docker Hub
         run: |
-          docker tag ${{ env.IMAGE_NAME }}:latest "${{ steps.version.outputs.dockerhub_tag_latest }}"
-          docker tag ${{ env.IMAGE_NAME }}:latest "${{ steps.version.outputs.dockerhub_tag_version }}"
-          docker push "${{ steps.version.outputs.dockerhub_tag_latest }}"
-          docker push "${{ steps.version.outputs.dockerhub_tag_version }}"
-          echo "Pushed: ${{ steps.version.outputs.dockerhub_tag_latest }}"
-          echo "Pushed: ${{ steps.version.outputs.dockerhub_tag_version }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:latest"
+          docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:${VERSION}"
+          docker push "libre7/gupax-docker:latest"
+          docker push "libre7/gupax-docker:${VERSION}"
+          echo "Pushed: libre7/gupax-docker:latest"
+          echo "Pushed: libre7/gupax-docker:${VERSION}"
 
       - name: Push SHA tag for traceability
         run: |
