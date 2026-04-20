@@ -19,6 +19,9 @@ echo "============================================="
 DISPLAY_NUM=:1
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
 
+# Remove stale X lock file from previous runs
+rm -f /tmp/.X${DISPLAY_NUM#*:}-lock 2>/dev/null
+
 # Start Xvfb (virtual framebuffer)
 echo "[*] Starting Xvfb on $DISPLAY_NUM..."
 Xvfb $DISPLAY_NUM -screen 0 $SCREEN_RESOLUTION -nolisten tcp &
