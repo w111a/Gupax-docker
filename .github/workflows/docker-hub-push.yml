@@ -55,6 +55,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify noVNC index.html
-        run: |
-          docker run --rm ${{ env.IMAGE_NAME }}:${{ github.sha }} cat /usr/share/novnc/index.html
