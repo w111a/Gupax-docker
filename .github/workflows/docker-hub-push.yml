@@ -40,21 +40,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pull image
+      - name: Pull image from GHCR
         run: |
           docker pull ${{ env.IMAGE_NAME }}:latest
 
-      - name: Tag and push all
+      - name: Detect Gupax version from upstream
+        id: version
         run: |
-          VERSION=$(docker inspect ${{ env.IMAGE_NAME }}:latest \
-            --format '{{ index .Config.Labels "guax.version" }}')
-          if [ -z "$VERSION" ]; then
-            VERSION="latest"
-          fi
-          echo "Tagging as: libre7/gupax-docker:${VERSION}"
+          VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/latest \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
+          echo "Latest Gupax version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Tag and push to Docker Hub
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Pushing: libre7/gupax-docker:${VERSION}"
           docker tag ${{ env.IMAGE_NAME }}:latest "libre7/gupax-docker:${VERSION}"
-          docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:latest
           docker push "libre7/gupax-docker:${VERSION}" --quiet
+          docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:latest
           docker push libre7/gupax-docker:latest --quiet
+
+      - name: Push SHA tag
+        run: |
           docker tag ${{ env.IMAGE_NAME }}:latest libre7/gupax-docker:${{ github.sha }}
           docker push libre7/gupax-docker:${{ github.sha }} --quiet
