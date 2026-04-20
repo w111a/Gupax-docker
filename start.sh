@@ -79,3 +79,9 @@ echo ""
 # Set DISPLAY for Gupax
 export DISPLAY=$DISPLAY_NUM
 
+# Start Gupax in the foreground — exec replaces this shell so Gupax
+# becomes PID 1. When Gupax exits, the container stops gracefully and
+# all background processes (Xvfb, x11vnc, websockify) receive SIGTERM.
+echo "[*] Starting Gupax..."
+exec gupax
+
