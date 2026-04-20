@@ -6,7 +6,8 @@
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/w111a/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/w111a/Gupax-docker/actions)
 [![License](https://img.shields.io/github/license/w111a/Gupax-docker?style=flat-square&color=blue)](https://github.com/w111a/Gupax-docker/blob/main/LICENSE)
-[![Image Size](https://img.shields.io/docker/image-size/ghcr.io/w111a/gupax-docker/latest?style=flat-square&logo=docker&color=blueviolet)](https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker)
+[![Docker Hub](https://img.shields.io/docker/pulls/libre7/gupax-docker?style=flat-square&color=blue&logo=docker)](https://hub.docker.com/r/libre7/gupax-docker)
+[![Image Size](https://img.shields.io/docker/image-size/libre7/gupax-docker/latest?style=flat-square&logo=docker&color=blueviolet)](https://hub.docker.com/r/libre7/gupax-docker)
 
 > Docker packaging for [Gupax](https://github.com/hinto-janai/gupax) — the GUI that unites [P2Pool](https://github.com/SChernykh/p2pool) and [XMRig](https://github.com/xmrig/xmrig) for easy, decentralized Monero mining.
 
@@ -39,6 +40,8 @@
 
 ## 🚀 Quick Start
 
+### Option 1: Docker Compose (recommended)
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/w111a/Gupax-docker.git
@@ -52,6 +55,30 @@ cp .env.example .env
 docker compose up -d
 
 # 4. Open your browser
+open http://localhost:6080
+```
+
+### Option 2: Docker Run
+
+```bash
+# Set your wallet
+export WALLET_ADDRESS=your_monero_wallet_address
+
+# Pull and run
+docker run -d \
+  --name gupax \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -p 37889:37889 \
+  -p 18080:18080 \
+  -p 18081:18081 \
+  -p 18082:18082 \
+  -v gupax-config:/home/miner/.local/state/gupax \
+  -v gupax-monero:/home/miner/.bitmonero \
+  -e WALLET_ADDRESS \
+  libre7/gupax-docker:latest
+
+# Open browser
 open http://localhost:6080
 ```
 
