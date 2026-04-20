@@ -1,5 +1,9 @@
 <img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="600">
 
+> [!WARNING]
+> **⚠️ Work in Progress — Not Ready for Use**
+> This project is actively under development. The Docker setup, configuration, and behavior may change at any time. Do not use in production or with real funds until a stable release is published.
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/w111a/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/w111a/Gupax-docker/actions)
 [![License](https://img.shields.io/github/license/w111a/Gupax-docker?style=flat-square&color=blue)](https://github.com/w111a/Gupax-docker/blob/main/LICENSE)
 [![Image Size](https://img.shields.io/docker/image-size/ghcr.io/w111a/gupax-docker/latest?style=flat-square&logo=docker&color=blueviolet)](https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker)
