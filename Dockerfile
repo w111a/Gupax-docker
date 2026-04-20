@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libxkbcommon-x11-0 \
     python3 \
+    bzip2 \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
