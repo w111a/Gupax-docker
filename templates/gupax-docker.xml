@@ -12,7 +12,7 @@
 
 Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
 
-IMPORTANT: You MUST set your WALLET_ADDRESS before starting. Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
+Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png</Icon>
@@ -23,15 +23,6 @@ IMPORTANT: You MUST set your WALLET_ADDRESS before starting. Mining cryptocurren
   <!-- Environment Variables                                        -->
   <!-- ============================================================ -->
   <Environment>
-    <Variable>
-      <Name>WALLET_ADDRESS</Name>
-      <Value></Value>
-      <Mode></Mode>
-      <Description>Your Monero wallet address for mining payouts. REQUIRED.</Description>
-      <Display>always</Display>
-      <Required>true</Required>
-      <Mask>never</Mask>
-    </Variable>
     <Variable>
       <Name>SCREEN_RESOLUTION</Name>
       <Value>1920x1080x24</Value>
