@@ -39,8 +39,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install bundled Gupax (Gupax + P2Pool + XMRig)
 # Structure: /usr/local/bin/gupax/
 #   gupax/          — Gupax v2.0.1 GUI
+#   gupax/node/     — Monero v0.18.4.6 daemon (monerod)
 #   gupax/p2pool/   — P2Pool v4.14 binary + docs
 #   gupax/xmrig/    — XMRig v6.26.0 binary + config
+#   gupax/proxy/    — XMRig-Proxy v6.26.0
 # Gupax finds binaries relative to its own executable location.
 # =============================================================================
 
@@ -78,9 +80,28 @@ RUN echo "ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087  xmri
     && mv xmrig-6.26.0/config.json /usr/local/bin/gupax/xmrig/ \
     && rm -rf xmrig.tar.gz xmrig.sha256 xmrig-6.26.0
 
+# --- Monero Node v0.18.4.6 ---
+# Monero daemon (monerod) for the Node tab
+# Downloaded from getmonero.org (not GitHub)
+# SHA256: 60cfc32d39c6fe6c19b23513d02017fe9055d2e412ee4cbc30fa40ba811fe052
+RUN curl -fsSL "https://downloads.getmonero.org/cli/monero-linux-x64-v0.18.4.6.tar.bz2" -o monero.tar.bz2 \
+    && echo "60cfc32d39c6fe6c19b23513d02017fe9055d2e412ee4cbc30fa40ba811fe052  monero.tar.bz2" | sha256sum -c - \
+    && tar -xjf monero.tar.bz2 \
+    && mkdir -p /usr/local/bin/gupax/node \
+    && mv monero-x86_64-linux-gnu-v0.18.4.6/monerod /usr/local/bin/gupax/node/ \
+    && rm -rf monero.tar.bz2 monero-x86_64-linux-gnu-v0.18.4.6
+
+# --- XMRig-Proxy v6.26.0 ---
+# XMRig proxy for the Proxy tab
+RUN curl -fsSL "https://github.com/xmrig/xmrig-proxy/releases/download/v6.26.0/xmrig-proxy-6.26.0-linux-static-x64.tar.gz" -o xmrig-proxy.tar.gz \
+    && tar -xzf xmrig-proxy.tar.gz \
+    && mkdir -p /usr/local/bin/gupax/proxy \
+    && mv xmrig-proxy-6.26.0/xmrig-proxy /usr/local/bin/gupax/proxy/ \
+    && rm -rf xmrig-proxy.tar.gz xmrig-proxy-6.26.0
+
 # --- Symlink gupax binary for easy access ---
 RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
-    && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig \
+    && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig /usr/local/bin/gupax/node/monerod /usr/local/bin/gupax/proxy/xmrig-proxy \
     && rm -rf /tmp/install
 
 # Save version info
@@ -94,8 +115,10 @@ LABEL maintainer="w111a" \
       org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
       org.opencontainers.image.version="v2.0.1-bundle" \
       guax.version="v2.0.1" \
+      node.version="v0.18.4.6" \
       p2pool.version="v4.14" \
-      xmrig.version="v6.26.0"
+      xmrig.version="v6.26.0" \
+      xmrig-proxy.version="v6.26.0"
 
 # Create Gupax state directory
 RUN mkdir -p /home/miner/.local/state/gupax && chown -R miner:miner /home/miner
