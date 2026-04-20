@@ -123,8 +123,8 @@ LABEL maintainer="w111a" \
 
 # Create Gupax state directory and symlink xmrig-proxy
 # Gupax expects xmrig-proxy at ~/.local/share/gupax/xmrig-proxy/xmrig-proxy
-RUN mkdir -p /home/miner/.local/state/gupax/xmrig-proxy && \
-    ln -sf /usr/local/bin/gupax/proxy/xmrig-proxy /home/miner/.local/state/gupax/xmrig-proxy/xmrig-proxy && \
+RUN mkdir -p /home/miner/.local/share/gupax/xmrig-proxy && \
+    ln -sf /usr/local/bin/gupax/proxy/xmrig-proxy /home/miner/.local/share/gupax/xmrig-proxy/xmrig-proxy && \
     chown -R miner:miner /home/miner
 
 # Create index.html redirect at build time (avoids any runtime permission issues)
@@ -138,7 +138,7 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081 18082
 
-VOLUME ["/home/miner/.local/state/gupax"]
+VOLUME ["/home/miner/.local/share/gupax"]
 
 USER miner
 WORKDIR /home/miner
