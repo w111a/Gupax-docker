@@ -19,8 +19,13 @@ echo "============================================="
 DISPLAY_NUM=:1
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
 
-# Remove stale X lock file from previous runs
-rm -f /tmp/.X${DISPLAY_NUM#*:}-lock 2>/dev/null
+# Remove stale X lock file and socket from previous runs
+rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null
+
+# Kill any stale Xvfb process still holding the display
+for pid in $(pidof Xvfb 2>/dev/null); do
+    kill -9 $pid 2>/dev/null && echo "[*] Killed stale Xvfb (PID $pid)" || true
+done
 
 # Start Xvfb (virtual framebuffer)
 echo "[*] Starting Xvfb on $DISPLAY_NUM..."
