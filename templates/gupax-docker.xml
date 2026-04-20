@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>ghcr.io/w111a/gupax-docker:latest</Repository>
-  <Registry>https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker</Registry>
+  <Repository>libre7/gupax-docker:latest</Repository>
+  <Registry>https://hub.docker.com/r/libre7/gupax-docker</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
