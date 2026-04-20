@@ -15,7 +15,7 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 1. Open **Apps** tab in Unraid
 2. Search for **"gupax"** or **"monero mining"**
 3. Click **Install**
-4. Set your `WALLET_ADDRESS` in the template
+4. Set SCREEN_RESOLUTION if needed (default: 1920x1080x24)
 5. Click **Apply** and start mining!
 
 ### Option 2: Manual Installation via Template URL
@@ -26,7 +26,7 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
    ```
    https://raw.githubusercontent.com/w111a/Gupax-docker/main/templates/gupax-docker.xml
    ```
-4. Fill in the required fields (especially `WALLET_ADDRESS`)
+4. Fill in fields as needed — no WALLET_ADDRESS required (set it in the Gupax GUI)
 5. Click **Apply**
 
 ### Option 3: Add Repository to Community Applications
