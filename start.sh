@@ -6,18 +6,10 @@
 
 set -e
 
-WALLET_ADDRESS="${WALLET_ADDRESS:-}"
-if [ -z "$WALLET_ADDRESS" ]; then
-    echo "[ERROR] WALLET_ADDRESS environment variable must be set"
-    echo "Example: docker run -e WALLET_ADDRESS=4ABC... ... ghcr.io/w111a/gupax-docker"
-    exit 1
-fi
-
 echo "============================================="
 echo "  Gupax-docker — Starting noVNC + Gupax"
 echo "============================================="
 echo ""
-echo "  Wallet: ${WALLET_ADDRESS:0:10}...${WALLET_ADDRESS: -6}"
 echo "  noVNC:  http://localhost:6080"
 echo "  VNC:    localhost:5900"
 echo ""
