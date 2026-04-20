@@ -57,12 +57,7 @@ docker compose up -d
 open http://localhost:6080
 ```
 
-### Option 2: Docker Run
-
 ```bash
-# Set your wallet
-export WALLET_ADDRESS=your_monero_wallet_address
-
 # Pull and run
 docker run -d \
   --name gupax \
@@ -74,7 +69,6 @@ docker run -d \
   -p 18082:18082 \
   -v gupax-config:/home/miner/.local/state/gupax \
   -v gupax-monero:/home/miner/.bitmonero \
-  -e WALLET_ADDRESS \
   libre7/gupax-docker:latest
 
 # Open browser
@@ -91,7 +85,6 @@ Click **Connect** on the noVNC page — no password required by default.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `WALLET_ADDRESS` | Yes | — | Your Monero wallet address for mining payouts |
 | `MONERO_DATA_PATH` | No | gupax-monero | Path to Monero blockchain data |
 
 > **Note:** `GUPAX_VERSION` and `GUPAX_SHA256` are managed automatically by the CI workflow — no manual configuration needed. The Docker image is always built with the latest detected upstream Gupax version.
@@ -99,7 +92,6 @@ Click **Connect** on the noVNC page — no password required by default.
 ### Ports
 
 | Port | Protocol | Service | Description |
-|---|---|---|---|
 | 6080 | HTTP | noVNC | **Web interface** — connect your browser here |
 | 5900 | VNC | x11vnc | Direct VNC access (optional) |
 | 3333 | TCP | P2Pool | Stratum server for miners |
