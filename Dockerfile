@@ -70,13 +70,13 @@ RUN echo "e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01  p2po
 # --- XMRig v6.26.0 (jammy build for Ubuntu 22.04) ---
 # SHA256: ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087
 RUN echo "ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087  xmrig.tar.gz" > xmrig.sha256 \
-    && curl -fsSL "https://github.com/xmrig/xmrig/releases/download/v6.26.0/xmrig-6.26.0-jammy-x64.tar.gz" -o xmrig.tar.gz \
+    && curl -fsSL "https://github.com/xmrig/xmrig/releases/download/v6.26.0/xmrig-6.26.0.tar.gz" -o xmrig.tar.gz \
     && sha256sum --check xmrig.sha256 \
     && tar -xzf xmrig.tar.gz \
     && mkdir -p /usr/local/bin/gupax/xmrig \
-    && mv xmrig-6.26.0-jammy-x64/xmrig /usr/local/bin/gupax/xmrig/ \
-    && mv xmrig-6.26.0-jammy-x64/config.json /usr/local/bin/gupax/xmrig/ \
-    && rm -rf xmrig.tar.gz xmrig.sha256 xmrig-6.26.0-jammy-x64
+    && mv xmrig-6.26.0/xmrig /usr/local/bin/gupax/xmrig/ \
+    && mv xmrig-6.26.0/config.json /usr/local/bin/gupax/xmrig/ \
+    && rm -rf xmrig.tar.gz xmrig.sha256 xmrig-6.26.0
 
 # --- Symlink gupax binary for easy access ---
 RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
