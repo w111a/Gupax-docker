@@ -1,7 +1,6 @@
 name: Push to Docker Hub
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -11,7 +10,6 @@ on:
       - 'start.sh'
       - '.dockerignore'
       - '.github/workflows/docker-hub-push.yml'
-      - '.github/workflows/docker-publish.yml'
 
 env:
   IMAGE_NAME: libre7/gupax-docker
@@ -38,8 +36,8 @@ jobs:
       - name: Detect Gupax version from upstream
         id: version
         run: |
-          VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/latest \
-            | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
+          VERSION=$(curl -fsSL https://api.github.com/repos/gupax-io/gupax/releases/latest)
+          VERSION=$(echo "$VERSION" | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
           echo "Latest Gupax version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -57,6 +55,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Inspect built image
+      - name: Verify noVNC index.html
         run: |
-          docker run --rm ${{ env.IMAGE_NAME }}:latest cat /usr/share/novnc/index.html
+          docker run --rm ${{ env.IMAGE_NAME }}:${{ github.sha }} cat /usr/share/novnc/index.html
