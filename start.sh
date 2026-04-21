@@ -79,6 +79,9 @@ echo "[*] Starting x11vnc on port 5900..."
 x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw &
 X11VNC_PID=$!
 
+# Re-enable X autorepeat that x11vnc disables on client connect
+xset r on 2>/dev/null || true
+
 sleep 1
 
 # Verify x11vnc is running
@@ -138,4 +141,3 @@ echo ""
 echo "[*] Main process exited (code: $EXIT_CODE)"
 cleanup
 exit $EXIT_CODE
-
