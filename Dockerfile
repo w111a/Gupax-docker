@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon-x11-0 \
     python3 \
     bzip2 \
-    pcmanfm \
-    libgtk-3-0 \
+    zenity \
+    dbus-x11 \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
