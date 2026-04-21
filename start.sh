@@ -57,7 +57,7 @@ done
 
 # Start Xvfb (virtual framebuffer)
 echo "[*] Starting Xvfb on $DISPLAY_NUM..."
-Xvfb $DISPLAY_NUM -screen 0 $SCREEN_RESOLUTION -kb -nolisten tcp &
+Xvfb $DISPLAY_NUM -screen 0 $SCREEN_RESOLUTION -nolisten tcp &
 XVFB_PID=$!
 
 # Wait for Xvfb to start
@@ -69,6 +69,10 @@ if ! kill -0 $XVFB_PID 2>/dev/null; then
     exit 1
 fi
 echo "[+] Xvfb started on $DISPLAY_NUM"
+
+# Configure keyboard layout for winit (Gupax's windowing library)
+echo "[*] Configuring keyboard layout..."
+setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
