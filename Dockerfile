@@ -34,6 +34,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zenity \
     dbus-x11 \
     dbus \
+    xdg-desktop-portal \
+    xdg-desktop-portal-gtk \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \

@@ -6,6 +6,34 @@
 
 set -e
 
+# Cleanup function — stops all background processes gracefully
+cleanup() {
+    echo ""
+    echo "[*] Shutting down..."
+    echo "[*] Stopping Gupax..."
+    kill $GUPAX_PID 2>/dev/null || true
+    wait $GUPAX_PID 2>/dev/null || true
+    echo "[*] Stopping xdg-desktop-portal..."
+    kill $PORTAL_PID 2>/dev/null || true
+    wait $PORTAL_PID 2>/dev/null || true
+    echo "[*] Stopping D-Bus session..."
+    kill $DBUS_SESSION_BUS_PID 2>/dev/null || true
+    wait $DBUS_SESSION_BUS_PID 2>/dev/null || true
+    echo "[*] Stopping websockify..."
+    kill $WEBSOCKIFY_PID 2>/dev/null || true
+    wait $WEBSOCKIFY_PID 2>/dev/null || true
+    echo "[*] Stopping x11vnc..."
+    kill $X11VNC_PID 2>/dev/null || true
+    wait $X11VNC_PID 2>/dev/null || true
+    echo "[*] Stopping Xvfb..."
+    kill $XVFB_PID 2>/dev/null || true
+    wait $XVFB_PID 2>/dev/null || true
+    echo "[+] Shutdown complete"
+}
+
+# Register signal handlers for graceful shutdown
+trap cleanup SIGTERM SIGINT SIGQUIT
+
 echo "============================================="
 echo "  Gupax-docker — Starting noVNC + Gupax"
 echo "============================================="
@@ -76,18 +104,33 @@ echo "[*] noVNC web interface ready at http://localhost:6080"
 echo "[*] Gupax GUI should appear automatically"
 echo ""
 
-# Set DISPLAY for Gupax
-export DISPLAY=$DISPLAY_NUM
-
-# Start D-Bus session for file dialog support (zenity, etc.)
+# Start D-Bus session for file dialog support (zenity, xdg-desktop-portal, etc.)
 echo "[*] Starting D-Bus session..."
 eval $(dbus-launch --sh-syntax)
 export DBUS_SESSION_BUS_ADDRESS
 echo "[+] D-Bus session started"
 
-# Start Gupax in the foreground — exec replaces this shell so Gupax
-# becomes PID 1. When Gupax exits, the container stops gracefully and
-# all background processes (Xvfb, x11vnc, websockify, dbus) receive SIGTERM.
+# Start xdg-desktop-portal (file picker backend for GTK/zenity)
+echo "[*] Starting xdg-desktop-portal..."
+xdg-desktop-portal &
+PORTAL_PID=$!
+echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
+
+# Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
-exec /usr/local/bin/gupax/gupax
+gosu miner /usr/local/bin/gupax/gupax &
+GUPAX_PID=$!
+echo "[+] Gupax started (PID $GUPAX_PID)"
+
+# Wait for any process to exit — this is what keeps the container running.
+# When Gupax exits, cleanup() runs and stops everything.
+echo "[*] All services running. Press Ctrl+C to stop."
+echo ""
+wait -n
+EXIT_CODE=$?
+
+echo ""
+echo "[*] Main process exited (code: $EXIT_CODE)"
+cleanup
+exit $EXIT_CODE
 
