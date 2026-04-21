@@ -112,7 +112,7 @@ echo "[+] D-Bus session started"
 
 # Start xdg-desktop-portal (file picker backend for GTK/zenity)
 echo "[*] Starting xdg-desktop-portal..."
-xdg-desktop-portal &
+/usr/libexec/xdg-desktop-portal &
 PORTAL_PID=$!
 echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
