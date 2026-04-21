@@ -121,11 +121,6 @@ LABEL maintainer="w111a" \
       xmrig.version="v6.26.0" \
       xmrig-proxy.version="v6.26.0"
 
-# Create Gupax state directory and symlink xmrig-proxy
-# Gupax expects xmrig-proxy at ~/.local/share/gupax/xmrig-proxy/xmrig-proxy
-RUN mkdir -p /home/miner/.local/share/gupax/xmrig-proxy && \
-    ln -sf /usr/local/bin/gupax/proxy/xmrig-proxy /home/miner/.local/share/gupax/xmrig-proxy/xmrig-proxy && \
-    chown -R miner:miner /home/miner
 
 # Create index.html redirect at build time (avoids any runtime permission issues)
 # This RUN executes as root, so we can write anywhere.
