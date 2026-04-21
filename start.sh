@@ -76,7 +76,7 @@ setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw -noxfixes -cursor arrow &
+x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw -noxfixes -cursor arrow -boring &
 X11VNC_PID=$!
 
 # Re-enable X autorepeat that x11vnc disables on client connect
@@ -141,3 +141,4 @@ echo ""
 echo "[*] Main process exited (code: $EXIT_CODE)"
 cleanup
 exit $EXIT_CODE
+
