@@ -102,7 +102,8 @@ RUN curl -fsSL "https://github.com/xmrig/xmrig-proxy/releases/download/v6.26.0/x
 
 
 # Symlink xmrig-proxy so Gupax finds it at /usr/local/bin/gupax/xmrig-proxy/xmrig-proxy
-RUN ln -s /usr/local/bin/gupax/proxy/xmrig-proxy /usr/local/bin/gupax/xmrig-proxy
+RUN mkdir -p /usr/local/bin/gupax/xmrig-proxy && \
+    ln -s /usr/local/bin/gupax/proxy/xmrig-proxy /usr/local/bin/gupax/xmrig-proxy/xmrig-proxy
 # --- Symlink gupax binary for easy access ---
 RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
     && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig /usr/local/bin/gupax/node/monerod /usr/local/bin/gupax/proxy/xmrig-proxy \
