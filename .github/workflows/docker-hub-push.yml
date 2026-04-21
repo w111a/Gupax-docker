@@ -10,6 +10,7 @@ on:
       - 'start.sh'
       - '.dockerignore'
       - '.github/workflows/docker-hub-push.yml'
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: libre7/gupax-docker
