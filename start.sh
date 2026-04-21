@@ -83,5 +83,7 @@ export DISPLAY=$DISPLAY_NUM
 # becomes PID 1. When Gupax exits, the container stops gracefully and
 # all background processes (Xvfb, x11vnc, websockify) receive SIGTERM.
 echo "[*] Starting Gupax..."
+mkdir -p ~/.local/share/gupax/xmrig-proxy && \
+    cp /usr/local/bin/gupax/proxy/xmrig-proxy ~/.local/share/gupax/xmrig-proxy/xmrig-proxy
 exec /usr/local/bin/gupax/gupax
 
