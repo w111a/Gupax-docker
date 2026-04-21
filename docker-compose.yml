@@ -12,6 +12,7 @@ services:
     stop_grace_period: 30s
     volumes:
       - gupax-config:/home/miner/.local/state/gupax
+      - gupax-share:/home/miner/.local/share/gupax
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero
     ports:
       - "6080:6080"   # noVNC web interface
@@ -29,4 +30,5 @@ services:
 
 volumes:
   gupax-config:
+  gupax-share:
   gupax-monero:
