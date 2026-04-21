@@ -117,10 +117,11 @@ PORTAL_PID=$!
 echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
+# Note: container already runs as 'miner' user (see USER directive in Dockerfile)
+# No gosu/su needed — we are already miner.
 echo "[*] Starting Gupax..."
-gosu miner /usr/local/bin/gupax/gupax &
+/usr/local/bin/gupax/gupax &
 GUPAX_PID=$!
-echo "[+] Gupax started (PID $GUPAX_PID)"
 
 # Wait for any process to exit — this is what keeps the container running.
 # When Gupax exits, cleanup() runs and stops everything.
