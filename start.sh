@@ -57,7 +57,7 @@ done
 
 # Start Xvfb (virtual framebuffer)
 echo "[*] Starting Xvfb on $DISPLAY_NUM..."
-Xvfb $DISPLAY_NUM -screen 0 $SCREEN_RESOLUTION -nolisten tcp &
+Xvfb $DISPLAY_NUM -screen 0 $SCREEN_RESOLUTION -kb -nolisten tcp &
 XVFB_PID=$!
 
 # Wait for Xvfb to start
