@@ -15,7 +15,7 @@ ENV TZ=UTC
 # Xvfb display for headless GUI
 ENV DISPLAY=:1
 
-# Install X11 (for Xvfb), VNC, noVNC, and Gupax runtime dependencies
+# Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     x11-xserver-utils \
@@ -31,6 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxkbcommon-x11-0 \
     python3 \
     bzip2 \
+    pcmanfm \
+    libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
