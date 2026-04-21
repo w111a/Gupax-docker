@@ -79,9 +79,15 @@ echo ""
 # Set DISPLAY for Gupax
 export DISPLAY=$DISPLAY_NUM
 
+# Start D-Bus session for file dialog support (zenity, etc.)
+echo "[*] Starting D-Bus session..."
+eval $(dbus-launch --sh-syntax)
+export DBUS_SESSION_BUS_ADDRESS
+echo "[+] D-Bus session started"
+
 # Start Gupax in the foreground — exec replaces this shell so Gupax
 # becomes PID 1. When Gupax exits, the container stops gracefully and
-# all background processes (Xvfb, x11vnc, websockify) receive SIGTERM.
+# all background processes (Xvfb, x11vnc, websockify, dbus) receive SIGTERM.
 echo "[*] Starting Gupax..."
 exec /usr/local/bin/gupax/gupax
 

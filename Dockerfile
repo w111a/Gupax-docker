@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     bzip2 \
     zenity \
     dbus-x11 \
+    dbus \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
