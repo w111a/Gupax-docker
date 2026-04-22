@@ -100,7 +100,9 @@ echo "[*] Starting noVNC on port 6080..."
 websockify --web /usr/share/novnc 6080 localhost:5900 &
 WEBSOCKIFY_PID=$!
 
-sleep 1
+# Re-enable X autorepeat after noVNC connects (x11vnc disables it on client connect)
+sleep 2
+xset r on 2>/dev/null || true
 
 # Verify websockify is running
 if ! kill -0 $WEBSOCKIFY_PID 2>/dev/null; then
