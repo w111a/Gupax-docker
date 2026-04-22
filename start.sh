@@ -104,6 +104,13 @@ WEBSOCKIFY_PID=$!
 sleep 2
 xset r on 2>/dev/null || true
 
+# Debug: show X keyboard state
+echo "[D] Keyboard repeat setting:"
+xset q 2>/dev/null | grep -A2 "Keyboard" || echo "[D] xset q failed"
+
+echo "[D] X input devices:"
+xinput list 2>/dev/null || echo "[D] xinput failed"
+
 # Verify websockify is running
 if ! kill -0 $WEBSOCKIFY_PID 2>/dev/null; then
     echo "[ERROR] websockify failed to start"
