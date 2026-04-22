@@ -79,9 +79,12 @@ echo "[*] Starting x11vnc on port 5900..."
 x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw -noxfixes -cursor arrow -boring &
 X11VNC_PID=$!
 
-# Re-enable X autorepeat that x11vnc disables on client connect
+# Re-enable X autorepeat that x11vnc disables on client connect (run 3x as x11vnc recommends)
 xset r on 2>/dev/null || true
-
+sleep 0.5
+xset r on 2>/dev/null || true
+sleep 0.5
+xset r on 2>/dev/null || true
 sleep 1
 
 # Verify x11vnc is running
