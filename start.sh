@@ -118,7 +118,7 @@ echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
-gosu miner /usr/local/bin/gupax/gupax &
+/usr/local/bin/gupax/gupax &
 GUPAX_PID=$!
 echo "[+] Gupax started (PID $GUPAX_PID)"
 
