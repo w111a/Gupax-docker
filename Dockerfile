@@ -144,6 +144,8 @@ EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081 18082
 
 
+RUN mkdir -p /home/miner/.local/share/gupax/p2pool /home/miner/.local/share/gupax/node /home/miner/.local/share/gupax/xmrig /home/miner/.local/share/gupax/xmrig-proxy     && ln -s /usr/local/bin/gupax/p2pool/p2pool /home/miner/.local/share/gupax/p2pool/p2pool     && ln -s /usr/local/bin/gupax/node/monerod /home/miner/.local/share/gupax/node/monerod     && ln -s /usr/local/bin/gupax/xmrig/xmrig /home/miner/.local/share/gupax/xmrig/xmrig     && ln -s /usr/local/bin/gupax/proxy/xmrig-proxy /home/miner/.local/share/gupax/xmrig-proxy/xmrig-proxy     && chown -R miner:miner /home/miner/.local
+
 USER miner
 WORKDIR /home/miner
 
