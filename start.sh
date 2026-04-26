@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Gupax-docker Startup Script
-# Starts Xvfb → x11vnc → websockify → Gupax
+# Starts Xvfb → openbox → x11vnc → websockify → Gupax
 # =============================================================================
 
 set -e
@@ -25,6 +25,9 @@ cleanup() {
     echo "[*] Stopping x11vnc..."
     kill $X11VNC_PID 2>/dev/null || true
     wait $X11VNC_PID 2>/dev/null || true
+    echo "[*] Stopping openbox..."
+    kill $OPENBOX_PID 2>/dev/null || true
+    wait $OPENBOX_PID 2>/dev/null || true
     echo "[*] Stopping Xvfb..."
     kill $XVFB_PID 2>/dev/null || true
     wait $XVFB_PID 2>/dev/null || true
@@ -45,15 +48,12 @@ echo "============================================="
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
+export DISPLAY=$DISPLAY_NUM
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
 
-# Remove stale X lock file and socket from previous runs
-rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null
-
-# Kill any stale Xvfb process still holding the display
-for pid in $(pidof Xvfb 2>/dev/null); do
-    kill -9 $pid 2>/dev/null && echo "[*] Killed stale Xvfb (PID $pid)" || true
-done
+# Clean up stale X11 lock files (Docker volumes may persist these)
+rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null || true
+rm -rf /tmp/.X11-unix 2>/dev/null || true
 
 # Start Xvfb (virtual framebuffer)
 echo "[*] Starting Xvfb on $DISPLAY_NUM..."
@@ -70,9 +70,31 @@ if ! kill -0 $XVFB_PID 2>/dev/null; then
 fi
 echo "[+] Xvfb started on $DISPLAY_NUM"
 
+# Start openbox (window manager — required for XI2 keyboard focus routing)
+echo "[*] Starting openbox..."
+openbox &>/dev/null &
+OPENBOX_PID=$!
+sleep 0.5
+if ! kill -0 $OPENBOX_PID 2>/dev/null; then
+    echo "[!] openbox failed, retrying..."
+    sleep 1
+    openbox &>/dev/null &
+    OPENBOX_PID=$!
+fi
+echo "[+] openbox started (PID $OPENBOX_PID)"
+sleep 1
+
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw &
+# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth
+if [ -n "$VNC_PASSWORD" ]; then
+    VNC_FLAGS="-passwd $VNC_PASSWORD"
+    echo "[*] VNC authentication: enabled (VNC_PASSWORD is set)"
+else
+    VNC_FLAGS="-nopw"
+    echo "[*] VNC authentication: DISABLED (set VNC_PASSWORD to enable)"
+fi
+x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 $VNC_FLAGS &
 X11VNC_PID=$!
 
 sleep 1
@@ -122,15 +144,13 @@ echo "[*] Starting Gupax..."
 GUPAX_PID=$!
 echo "[+] Gupax started (PID $GUPAX_PID)"
 
-# Wait for any process to exit — this is what keeps the container running.
-# When Gupax exits, cleanup() runs and stops everything.
+# Wait specifically for Gupax — other services dying should NOT kill the container.
 echo "[*] All services running. Press Ctrl+C to stop."
 echo ""
-wait -n
+wait $GUPAX_PID
 EXIT_CODE=$?
 
 echo ""
-echo "[*] Main process exited (code: $EXIT_CODE)"
+echo "[*] Gupax exited (code: $EXIT_CODE)"
 cleanup
 exit $EXIT_CODE
-

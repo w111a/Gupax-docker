@@ -12,8 +12,8 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Xvfb display for headless GUI
-ENV DISPLAY=:1
+# VNC password — set VNC_PASSWORD to require auth; leave empty for no auth
+ENV VNC_PASSWORD=
 
 # Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -22,7 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     x11vnc \
     novnc \
     websockify \
-    libgl1-mesa-glx \
     libgl1 \
     libasound2 \
     libpulse0 \
@@ -32,11 +31,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     bzip2 \
     zenity \
+    openbox \
     dbus-x11 \
     dbus \
     xdg-desktop-portal \
     xdg-desktop-portal-gtk \
-    gosu \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
@@ -100,11 +99,14 @@ RUN curl -fsSL "https://downloads.getmonero.org/cli/monero-linux-x64-v0.18.4.6.t
 
 # --- XMRig-Proxy v6.26.0 ---
 # XMRig proxy for the Proxy tab
-RUN curl -fsSL "https://github.com/xmrig/xmrig-proxy/releases/download/v6.26.0/xmrig-proxy-6.26.0-linux-static-x64.tar.gz" -o xmrig-proxy.tar.gz \
+# SHA256: 73cceb10be474ba8ce20faddb9d2c6af0cb50bce84e72f7d36a326f7147c01c4
+RUN echo "73cceb10be474ba8ce20faddb9d2c6af0cb50bce84e72f7d36a326f7147c01c4  xmrig-proxy.tar.gz" > xmrig-proxy.sha256 \
+    && curl -fsSL "https://github.com/xmrig/xmrig-proxy/releases/download/v6.26.0/xmrig-proxy-6.26.0-linux-static-x64.tar.gz" -o xmrig-proxy.tar.gz \
+    && sha256sum --check xmrig-proxy.sha256 \
     && tar -xzf xmrig-proxy.tar.gz \
     && mkdir -p /usr/local/bin/gupax/proxy \
     && mv xmrig-proxy-6.26.0/xmrig-proxy /usr/local/bin/gupax/proxy/ \
-    && rm -rf xmrig-proxy.tar.gz xmrig-proxy-6.26.0
+    && rm -rf xmrig-proxy.tar.gz xmrig-proxy.sha256 xmrig-proxy-6.26.0
 
 
 # Symlink xmrig-proxy so Gupax finds it at /usr/local/bin/gupax/xmrig-proxy/xmrig-proxy
@@ -115,17 +117,12 @@ RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
     && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig /usr/local/bin/gupax/node/monerod /usr/local/bin/gupax/proxy/xmrig-proxy \
     && rm -rf /tmp/install
 
-# Save version info
-RUN echo "v2.0.1" > /tmp/guax_version \
-    && echo "e64f6f774dc35352b8ae4397ccdb92ce0cc935cdfb100eac58d44e49f8796a01" > /tmp/p2pool_sha256 \
-    && echo "ca82fc8426187880dffa502363849af6258e65fdb675a9cc9984a2b843854087" > /tmp/xmrig_sha256
-
 # Labels
 LABEL maintainer="w111a" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, bundled binaries)" \
       org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
       org.opencontainers.image.version="v2.0.1-bundle" \
-      guax.version="v2.0.1" \
+      org.opencontainers.image.gupax.version="v2.0.1" \
       node.version="v0.18.4.6" \
       p2pool.version="v4.14" \
       xmrig.version="v6.26.0" \
@@ -146,7 +143,13 @@ EXPOSE 3333 37889 18080 18081 18082
 
 RUN mkdir -p /home/miner/.local/share/gupax/p2pool /home/miner/.local/share/gupax/node /home/miner/.local/share/gupax/xmrig /home/miner/.local/share/gupax/xmrig-proxy     && ln -s /usr/local/bin/gupax/p2pool/p2pool /home/miner/.local/share/gupax/p2pool/p2pool     && ln -s /usr/local/bin/gupax/node/monerod /home/miner/.local/share/gupax/node/monerod     && ln -s /usr/local/bin/gupax/xmrig/xmrig /home/miner/.local/share/gupax/xmrig/xmrig     && ln -s /usr/local/bin/gupax/proxy/xmrig-proxy /home/miner/.local/share/gupax/xmrig-proxy/xmrig-proxy     && chown -R miner:miner /home/miner/.local
 
+
+
 USER miner
 WORKDIR /home/miner
+
+# Health check — verify noVNC web interface is responding
+HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:6080/')" || exit 1
 
 ENTRYPOINT ["/usr/local/bin/start.sh"]
