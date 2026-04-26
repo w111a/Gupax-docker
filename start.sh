@@ -28,6 +28,9 @@ cleanup() {
     echo "[*] Stopping openbox..."
     kill $OPENBOX_PID 2>/dev/null || true
     wait $OPENBOX_PID 2>/dev/null || true
+    echo "[*] Stopping Tor..."
+    kill $TOR_PID 2>/dev/null || true
+    wait $TOR_PID 2>/dev/null || true
     echo "[*] Stopping Xvfb..."
     kill $XVFB_PID 2>/dev/null || true
     wait $XVFB_PID 2>/dev/null || true
@@ -44,7 +47,12 @@ echo ""
 echo "  noVNC:  http://localhost:6080"
 echo "  VNC:    localhost:5900"
 echo ""
-echo "============================================="
+if [ "${TOR_ENABLED:-false}" = "true" ]; then
+    echo "  Tor:    ENABLED (SOCKS5 127.0.0.1:9050)"
+    echo "  Tip:    Set Node arguments to --proxy=127.0.0.1:9050"
+else
+    echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
+fi
 
 # Fix volume permissions if Docker overlay created root-owned directories
 echo "[*] Checking state directory permissions..."
@@ -64,6 +72,75 @@ fi
 DISPLAY_NUM=:1
 export DISPLAY=$DISPLAY_NUM
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
+
+# ── Tor daemon (optional) ──────────────────────────────────────────────────
+if [ "${TOR_ENABLED:-false}" = "true" ]; then
+    echo "[*] Tor is enabled — starting Tor daemon..."
+
+    # Prepare Tor directories with restrictive permissions (required for HS)
+    mkdir -p /home/miner/.tor
+    chmod 700 /home/miner/.tor
+
+    # Generate minimal torrc: SOCKS5 outbound proxy + hidden service for monerod P2P
+    cat > /home/miner/.tor/torrc <<'TORRC'
+SocksPort 127.0.0.1:9050
+DataDirectory /home/miner/.tor
+PidFile /home/miner/.tor/tor.pid
+HiddenServiceDir /home/miner/.tor/hs_monerod
+HiddenServicePort 18080 127.0.0.1:18080
+TORRC
+    chmod 600 /home/miner/.tor/torrc
+
+    /usr/sbin/tor --torrc-file /home/miner/.tor/torrc &
+    TOR_PID=$!
+
+    echo "[*] Waiting for Tor SOCKS proxy (127.0.0.1:9050) to be ready..."
+    for i in $(seq 1 30); do
+        if nc -z 127.0.0.1 9050 2>/dev/null; then
+            echo "[+] Tor SOCKS proxy is ready (127.0.0.1:9050)"
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo "[!] WARNING: Tor SOCKS proxy did not become ready within 30s — continuing anyway"
+        else
+            sleep 1
+        fi
+    done
+
+    # ── Phase 2: Hidden Service .onion address ─────────────────────────────
+    echo "[*] Waiting for hidden service .onion address..."
+    HS_HOSTNAME=""
+    for i in $(seq 1 30); do
+        if [ -f /home/miner/.tor/hs_monerod/hostname ]; then
+            HS_HOSTNAME=$(tr -d '[:space:]' < /home/miner/.tor/hs_monerod/hostname 2>/dev/null)
+            if [ -n "$HS_HOSTNAME" ]; then
+                break
+            fi
+        fi
+        if [ $i -eq 30 ]; then
+            echo "[!] WARNING: Hidden service .onion address not generated in time"
+        else
+            sleep 1
+        fi
+    done
+
+    if [ -n "$HS_HOSTNAME" ]; then
+        echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
+        HS_KEY="${HS_HOSTNAME%.onion}"
+        echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
+        echo "    --proxy=127.0.0.1:9050"
+        echo "    --anonymous-inbound=${HS_KEY},127.0.0.1:18080,40"
+        # Persist for reference across container restarts
+        cat > /home/miner/.tor/monerod_onion.txt <<EOF
+Monero Node .onion: ${HS_HOSTNAME}
+Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18080,40
+Outbound proxy:    --proxy=127.0.0.1:9050
+Set both in Gupax → Node tab → Arguments
+EOF
+    fi
+else
+    TOR_PID=""
+fi
 
 # Clean up stale X11 lock files (Docker volumes may persist these)
 rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null || true

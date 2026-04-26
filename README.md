@@ -27,6 +27,7 @@
 | 🔄 Auto-restart | Container restarts automatically on failure |
 | 📊 Mining dashboard | Real-time hashrate, shares, payouts, and node status |
 | 🔧 XMRig proxy | Built-in proxy for connecting external miners |
+| 🧅 Tor | Optional Tor onion hidden service for Monero P2P & SOCKS5 proxy |
 
 ---
 
@@ -68,7 +69,7 @@ docker run -d \
   -p 18080:18080 \
   -p 18081:18081 \
   -p 18082:18082 \
-  -v gupax-config:/home/miner/.local/state/gupax \
+  -v gupax-config:/home/miner/.local/share/gupax \
   -v gupax-monero:/home/miner/.bitmonero \
   libre7/gupax-docker:latest
 
@@ -107,7 +108,7 @@ If Gupax-docker is not yet in the Community Applications store:
    ```
    https://raw.githubusercontent.com/w111a/gupax-docker/main/templates/gupax-docker.xml
    ```
-4. Fill in the required fields — only **SCREEN_RESOLUTION** is configurable
+4. Fill in the required fields — set **TOR_ENABLED** and **SCREEN_RESOLUTION** as needed
 5. Click **Apply**
 
 ### Accessing the GUI
@@ -163,7 +164,10 @@ If you have an existing Monero blockchain on your Unraid server:
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `MONERO_DATA_PATH` | No | gupax-monero | Path to Monero blockchain data |
+| `TOR_ENABLED` | No | `false` | Enable Tor SOCKS5 proxy and hidden service for Monero P2P |
+| `VNC_PASSWORD` | No | *(empty)* | Set to require VNC authentication. Leave empty for no password |
+| `SCREEN_RESOLUTION` | No | `1920x1080x24` | Display resolution for the noVNC/Gupax GUI |
+| `MONERO_DATA_PATH` | No | `gupax-monero` | Path to Monero blockchain data (host-mounted volume) |
 
 > **Note:** `GUPAX_VERSION` and `GUPAX_SHA256` are managed automatically by the CI workflow — no manual configuration needed. The Docker image is always built with the latest detected upstream Gupax version.
 
@@ -196,8 +200,9 @@ If you have an existing Monero blockchain on your Unraid server:
 
 | Volume | Path | Description |
 |---|---|---|
-| `gupax-config` | `/home/miner/.local/state/gupax` | Gupax configuration and state |
+| `gupax-config` | `/home/miner/.local/share/gupax` | Gupax configuration and state |
 | `gupax-monero` (or host path) | `/home/miner/.bitmonero` | Monero blockchain data |
+| `gupax-tor` (optional) | `/home/miner/.tor` | Tor hidden service keys (for persistent .onion address) |
 
 ### Using an Existing Blockchain
 
@@ -224,6 +229,84 @@ docker run --rm -v gupax-monero:/data -v /path/to/your/blockchain:/source alpine
 # volumes:
 #   - /path/to/your/blockchain:/home/miner/.bitmonero
 ```
+
+---
+
+## 🧅 Tor Hidden Service (Optional)
+
+Gupax-docker can optionally run a Tor daemon inside the container to provide:
+
+- **SOCKS5 proxy** (`127.0.0.1:9050`) for outbound Monero P2P connections via Tor
+- **Onion hidden service** — exposes your Monero node's P2P port (`18080`) as a `.onion` address for anonymous inbound connections
+
+### Enabling Tor
+
+Set `TOR_ENABLED=true` in your environment:
+
+```bash
+docker run -d \
+  --name gupax \
+  -e TOR_ENABLED=true \
+  -p 6080:6080 \
+  -p 18080:18080 \
+  libre7/gupax-docker:latest
+```
+
+Or in `docker-compose.yml`:
+
+```yaml
+services:
+  gupax:
+    image: libre7/gupax-docker:latest
+    environment:
+      - TOR_ENABLED=true
+```
+
+### Tor Configuration
+
+When `TOR_ENABLED=true`, the container automatically:
+
+1. Starts the Tor daemon
+2. Waits for the SOCKS5 proxy to be ready
+3. Generates an **ephemeral hidden service** for `127.0.0.1:18080`
+4. Displays the `.onion` address in the container logs
+
+### Using Tor in Gupax
+
+When Tor is enabled, the container logs will show:
+
+```
+[+] Tor SOCKS proxy is ready (127.0.0.1:9050)
+[+] Monero node hidden service: abc123...xyz.onion
+[+] Recommended monerod arguments:
+    --proxy=127.0.0.1:9050
+    --anonymous-inbound=abc123...xyz,127.0.0.1:18080,40
+```
+
+In Gupax, go to the **Node tab** and paste both arguments into the **Arguments** field:
+
+```
+--proxy=127.0.0.1:9050 --anonymous-inbound=abc123...xyz,127.0.0.1:18080,40
+```
+
+> **Note:** The `.onion` address is ephemeral — it changes every time the container is recreated. If you need a persistent address, mount a volume at `/home/miner/.tor`.
+
+### Tor Data Persistence
+
+The hidden service private key is stored in `/home/miner/.tor/hs_monerod/`. To keep the same address across restarts:
+
+```yaml
+volumes:
+  - gupax-tor:/home/miner/.tor
+```
+
+The reference file `/home/miner/.tor/monerod_onion.txt` contains the current `.onion` address and recommended arguments.
+
+### Security Considerations
+
+- The hidden service only exposes port `18080` (Monero P2P), **not** RPC ports
+- Port `9050` is bound to `127.0.0.1` inside the container and not exposed externally
+- Consider firewall rules to block inbound to `18080` if you only want outbound Tor
 
 ---
 

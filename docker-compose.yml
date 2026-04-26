@@ -8,9 +8,13 @@ services:
     container_name: gupax
     restart: unless-stopped
     stop_grace_period: 30s
+    environment:
+      - TOR_ENABLED=false   # Set to true to enable Tor SOCKS5 + hidden service
+      # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
     volumes:
       - gupax-config:/home/miner/.local/share/gupax
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero
+      # - gupax-tor:/home/miner/.tor  # Uncomment for persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
       - "5900:5900"   # VNC server (optional)
@@ -28,3 +32,4 @@ services:
 volumes:
   gupax-config:
   gupax-monero:
+  gupax-tor:

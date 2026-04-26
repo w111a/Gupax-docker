@@ -31,6 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     bzip2 \
     zenity \
+    tor \
+    netcat-openbsd \
     openbox \
     dbus-x11 \
     dbus \
