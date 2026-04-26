@@ -12,6 +12,8 @@
 
 Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
 
+Optional Tor support: set TOR_ENABLED=true to run a Tor SOCKS5 proxy and onion hidden service for anonymous Monero P2P connections.
+
 Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
@@ -33,11 +35,22 @@ Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining 
       <Mask>true</Mask>
     </Variable>
     <Variable>
+      <Name>TOR_ENABLED</Name>
+      <Value>false</Value>
+      <Mode></Mode>
+      <Description>Set to true to enable a Tor SOCKS5 proxy (127.0.0.1:9050) and onion hidden service for anonymous Monero P2P connections. Hidden service exposes port 18080 P2P only — not RPC.</Description>
+      <Display>always</Display>
+      <DisplayName>Tor (Enable Tor Proxy + Hidden Service)</DisplayName>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
       <Name>SCREEN_RESOLUTION</Name>
       <Value>1920x1080x24</Value>
       <Mode></Mode>
       <Description>Display resolution for Gupax GUI inside the container (default: 1920x1080x24)</Description>
       <Display>advanced</Display>
+      <DisplayName>Screen Resolution</DisplayName>
       <Required>false</Required>
       <Mask>false</Mask>
     </Variable>
@@ -115,6 +128,13 @@ Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining 
       <Mode>rw</Mode>
       <Description>Monero blockchain data. In Gupax UI, go to Node tab and set database path to /home/miner/.bitmonero</Description>
       <Display>always</Display>
+    </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/gupax/tor</HostDir>
+      <ContainerDir>/home/miner/.tor</ContainerDir>
+      <Mode>rw</Mode>
+      <Description>Tor hidden service keys (optional). Mount this to keep the same .onion address across container restarts. Only used when TOR_ENABLED=true.</Description>
+      <Display>advanced</Display>
     </Volume>
   </Volumes>
 
