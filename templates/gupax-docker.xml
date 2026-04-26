@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>libre7/gupax-docker:latest</Repository>
-  <Registry>https://hub.docker.com/r/libre7/gupax-docker</Registry>
+  <Repository>ghcr.io/w111a/gupax-docker:latest</Repository>
+  <Registry>https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
@@ -12,17 +12,26 @@
 
 Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
 
-Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
+Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png</Icon>
-  <ExtraParams></ExtraParams>
+  <ExtraParams>--security-opt no-new-privileges:true</ExtraParams>
   <PostArgs></PostArgs>
 
   <!-- ============================================================ -->
   <!-- Environment Variables                                        -->
   <!-- ============================================================ -->
   <Environment>
+    <Variable>
+      <Name>VNC_PASSWORD</Name>
+      <Value></Value>
+      <Mode></Mode>
+      <Description>VNC password — set this to require authentication for the noVNC web interface. Leave empty to disable auth (not recommended on exposed networks).</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>true</Mask>
+    </Variable>
     <Variable>
       <Name>SCREEN_RESOLUTION</Name>
       <Value>1920x1080x24</Value>
@@ -95,7 +104,7 @@ Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cr
   <Volumes>
     <Volume>
       <HostDir>/mnt/user/appdata/gupax/config</HostDir>
-      <ContainerDir>/home/miner/.local/state/gupax</ContainerDir>
+      <ContainerDir>/home/miner/.local/share/gupax</ContainerDir>
       <Mode>rw</Mode>
       <Description>Gupax configuration and state (wallet, settings persist here)</Description>
       <Display>always</Display>
@@ -108,18 +117,6 @@ Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cr
       <Display>always</Display>
     </Volume>
   </Volumes>
-
-  <!-- ============================================================ -->
-  <!-- Resource Limits (recommended for Unraid)                    -->
-  <!-- ============================================================ -->
-  <Deploy>
-    <Resources>
-      <Limit>
-        <Memory>4096000</Memory>
-        <CPU>2</CPU>
-      </Limit>
-    </Resources>
-  </Deploy>
 
   <!-- ============================================================ -->
   <!-- Restart Policy                                               -->
