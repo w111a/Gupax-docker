@@ -126,7 +126,7 @@ TORRC
 
     if [ -n "$HS_HOSTNAME" ]; then
         echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
-        HS_KEY="${HS_HOSTNAME%.onion}"
+        HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
         echo "    --proxy=127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY},127.0.0.1:18080,40"
