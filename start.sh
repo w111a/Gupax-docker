@@ -129,12 +129,14 @@ TORRC
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
         echo "    --proxy=127.0.0.1:9050"
+        echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY},127.0.0.1:18080,40"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
 Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18080,40
 Outbound proxy:    --proxy=127.0.0.1:9050
+Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
 Set both in Gupax → Node tab → Arguments
 EOF
     fi
