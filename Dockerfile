@@ -147,7 +147,7 @@ RUN mkdir -p /home/miner/.local/share/gupax/p2pool /home/miner/.local/share/gupa
 
 
 
-RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero
+RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero     && ln -sf /home/miner/.bitmonero /home/miner/.local/share/gupax/node/.bitmonero
 
 USER miner
 WORKDIR /home/miner
