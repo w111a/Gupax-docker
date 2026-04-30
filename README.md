@@ -271,36 +271,73 @@ When `TOR_ENABLED=true`, the container automatically:
 3. Generates an **ephemeral hidden service** for `127.0.0.1:18080`
 4. Displays the `.onion` address in the container logs
 
-### Using Tor in Gupax
+### Finding Your .onion Address
 
-When Tor is enabled, the container logs will show:
+Tor generates the `.onion` address automatically when the container starts — you don't create it yourself. You can find it in three places:
+
+| Source | How to access |
+|---|---|
+| **Container logs** | `docker logs gupax` — prints the `.onion` at startup |
+| **Reference file** | `/home/miner/.tor/monerod_onion.txt` inside the container |
+| **Raw hostname file** | `/home/miner/.tor/hs_monerod/hostname` — what Tor writes |
+
+When `TOR_ENABLED=true`, the startup sequence is:
+
+1. Tor daemon boots and creates a hidden service keypair
+2. The resulting `.onion` hostname is written to `hs_monerod/hostname`
+3. `start.sh` reads it and prints it to stdout → picked up by `docker logs`
+
+Here's what you'll see:
 
 ```
 [+] Tor SOCKS proxy is ready (127.0.0.1:9050)
-[+] Monero node hidden service: abc123...xyz.onion
+[+] Monero node hidden service: abc123def456...xyz.onion
 [+] Recommended monerod arguments:
     --proxy=127.0.0.1:9050
-    --anonymous-inbound=abc123...xyz,127.0.0.1:18080,40
+    --anonymous-inbound=abc123def456...xyz,127.0.0.1:18080,40
 ```
 
-In Gupax, go to the **Node tab** and paste both arguments into the **Arguments** field:
+### Pasting the .onion Into Gupax
+
+Once you have the `.onion` address:
+
+1. Open the Gupax web UI at `http://your-server:6080`
+2. Go to the **Node** tab
+3. Switch from **Simple** to **Advanced** mode to reveal the **"Start options:"** box
+4. Paste the combined arguments:
 
 ```
---proxy=127.0.0.1:9050 --anonymous-inbound=abc123...xyz,127.0.0.1:18080,40
+--proxy=127.0.0.1:9050 --anonymous-inbound=abc123def456...xyz,127.0.0.1:18080,40
 ```
 
-> **Note:** The `.onion` address is ephemeral — it changes every time the container is recreated. If you need a persistent address, mount a volume at `/home/miner/.tor`.
+5. Click **Save** (Gupax does not auto-save)
+6. Click **Start** to launch monerod with Tor routing
 
-### Tor Data Persistence
+> **Important:** Save before starting. If you click Start without saving, the arguments are lost when the container restarts.
 
-The hidden service private key is stored in `/home/miner/.tor/hs_monerod/`. To keep the same address across restarts:
+### Why Only monerod? (No P2Pool Hidden Service)
+
+Only monerod gets a hidden service. P2Pool does **not** receive its own `.onion` or outbound Tor routing. The rationale:
+
+| Layer | Tor path | Reason |
+|---|---|---|
+| **monerod** | ✅ Full Tor (inbound + outbound) | Privacy-critical: hides your IP from the Monero P2P network. Hidden service lets other Tor nodes find yours. |
+| **P2Pool** | ❌ No Tor routing | P2Pool already runs locally and talks to monerod at `127.0.0.1:18081` — no external exposure. Adding a P2Pool hidden service would introduce **hundreds of milliseconds of extra latency** on the already time-sensitive sidechain consensus, degrading share propagation reliability for no privacy gain. |
+
+In this setup, P2Pool communicates with monerod over the loopback interface inside the container. Only monerod's P2P traffic to the outside world traverses Tor.
+
+### Keeping the Same .onion Across Restarts
+
+By default the `.onion` address is **ephemeral** — destroying and recreating the container generates a new keypair, and therefore a new address. To keep the same address permanently, bind-mount the Tor data directory:
 
 ```yaml
 volumes:
-  - gupax-tor:/home/miner/.tor
+  - gupax-tor:/home/miner/.tor   # uncomment in docker-compose.yml
 ```
 
-The reference file `/home/miner/.tor/monerod_onion.txt` contains the current `.onion` address and recommended arguments.
+The hidden service private key lives at `/home/miner/.tor/hs_monerod/hs_ed25519_secret_key`. As long as that file persists, the `.onion` address stays the same.
+
+> **⚠️ After container recreation:** If you recreated the container *without* a persistent Tor volume, a new `.onion` is generated — but Gupax's `state.toml` still has the **old** one. monerod will fail to bind the hidden service and exit with `[Failed]`. Fix: copy the **new** `.onion` from `docker logs` into the Start options box and Save.
 
 ### Security Considerations
 
