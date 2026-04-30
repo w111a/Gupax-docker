@@ -37,11 +37,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dbus-x11 \
     dbus \
     xdg-desktop-portal \
-    xdg-desktop-portal-gtk \
+    sudo \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates \
     && groupadd -r miner \
     && useradd -r -g miner -m -d /home/miner miner
+
+# Allow passwordless sudo for XMRig only — Gupax on Linux spawns XMRig via pkexec
+# which is unavailable in Docker; we provide a pkexec→sudo wrapper instead.
+RUN echo "miner ALL=(ALL) NOPASSWD: /usr/local/bin/gupax/xmrig/xmrig" > /etc/sudoers.d/gupax-xmrig \
+    && chmod 0440 /etc/sudoers.d/gupax-xmrig
+
+# Provide a pkexec wrapper that delegates to sudo (no PolicyKit agent in container)
+RUN printf '#!/bin/sh\nexec sudo "$@"\n' > /usr/local/bin/pkexec \
+    && chmod +x /usr/local/bin/pkexec
 
 # =============================================================================
 # Install bundled Gupax (Gupax + P2Pool + XMRig)
