@@ -51,7 +51,6 @@ RUN echo "miner ALL=(ALL) NOPASSWD: /usr/local/bin/gupax/xmrig/xmrig" > /etc/sud
 # Provide a pkexec wrapper that delegates to sudo (no PolicyKit agent in container)
 RUN printf '#!/bin/sh\nexec sudo "$@"\n' > /usr/local/bin/pkexec \
     && chmod +x /usr/local/bin/pkexec
-
 # =============================================================================
 # Install bundled Gupax (Gupax + P2Pool + XMRig)
 # Structure: /usr/local/bin/gupax/
@@ -126,6 +125,7 @@ RUN mkdir -p /usr/local/bin/gupax/xmrig-proxy && \
 # --- Symlink gupax binary for easy access ---
 RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
     && chmod +x /usr/local/bin/gupax/gupax /usr/local/bin/gupax/p2pool/p2pool /usr/local/bin/gupax/xmrig/xmrig /usr/local/bin/gupax/node/monerod /usr/local/bin/gupax/proxy/xmrig-proxy \
+    && chown -R miner:miner /usr/local/bin/gupax/p2pool /usr/local/bin/gupax/xmrig /usr/local/bin/gupax/proxy /usr/local/bin/gupax/xmrig-proxy \
     && rm -rf /tmp/install
 
 # Labels
@@ -156,7 +156,7 @@ RUN mkdir -p /home/miner/.local/share/gupax/p2pool /home/miner/.local/share/gupa
 
 
 
-RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero     && ln -sf /home/miner/.bitmonero /home/miner/.local/share/gupax/node/.bitmonero
+RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero     && ln -sf /home/miner/.bitmonero /usr/local/bin/gupax/node/.bitmonero
 
 USER miner
 WORKDIR /home/miner
