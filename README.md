@@ -294,7 +294,7 @@ Here's what you'll see:
 [+] Monero node hidden service: abc123def456...xyz.onion
 [+] Recommended monerod arguments:
     --proxy=127.0.0.1:9050
-    --anonymous-inbound=abc123def456...xyz,127.0.0.1:18080,40
+    --anonymous-inbound=abc123def456...xyz,127.0.0.1:18084,40
 ```
 
 ### Pasting the .onion Into Gupax
@@ -307,7 +307,7 @@ Once you have the `.onion` address:
 4. Paste the combined arguments:
 
 ```
---proxy=127.0.0.1:9050 --anonymous-inbound=abc123def456...xyz,127.0.0.1:18080,40
+--proxy=127.0.0.1:9050 --anonymous-inbound=abc123def456...xyz,127.0.0.1:18084,40
 ```
 
 5. Click **Save** (Gupax does not auto-save)
