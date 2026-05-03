@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>ghcr.io/w111a/gupax-docker:latest</Repository>
-  <Registry>https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker</Registry>
+  <Repository>libre7/gupax-docker:feat-tor-node</Repository>
+  <Registry>https://hub.docker.com/r/libre7/gupax-docker</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
@@ -12,7 +12,7 @@
 
 Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
 
-Optional Tor support: set TOR_ENABLED=true to run a Tor SOCKS5 proxy and onion hidden service for anonymous Monero P2P connections.
+This is a development build with Tor support included. Set TOR_ENABLED=true to run a Tor SOCKS5 proxy and onion hidden service for anonymous Monero P2P. Use libre7/gupax-docker:latest for the stable version.
 
 Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
