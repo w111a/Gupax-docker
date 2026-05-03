@@ -17,7 +17,7 @@ Optional Tor support: set TOR_ENABLED=true to run a Tor SOCKS5 proxy and onion h
 Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
-  <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png</Icon>
+  <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png</Icon>
   <ExtraParams>--security-opt no-new-privileges:true</ExtraParams>
   <PostArgs></PostArgs>
 
