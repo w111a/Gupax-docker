@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/tor-node
     paths:
       - 'Dockerfile'
       - 'docker-compose.yml'
@@ -55,4 +56,3 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
