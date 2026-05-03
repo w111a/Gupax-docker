@@ -132,6 +132,7 @@ RUN ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
 LABEL maintainer="w111a" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, bundled binaries)" \
       org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
+      org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
       org.opencontainers.image.version="v2.0.1-bundle" \
       org.opencontainers.image.gupax.version="v2.0.1" \
       node.version="v0.18.4.6" \
