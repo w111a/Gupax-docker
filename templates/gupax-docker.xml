@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>ghcr.io/w111a/gupax-docker:latest</Repository>
-  <Registry>https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker</Registry>
+  <Repository>libre7/gupax-docker:latest</Repository>
+  <Registry>https://hub.docker.com/r/libre7/gupax-docker</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
@@ -11,8 +11,6 @@
   <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.
 
 Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
-
-Optional Tor support: set TOR_ENABLED=true to run a Tor SOCKS5 proxy and onion hidden service for anonymous Monero P2P connections.
 
 Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
   <Category>Crypto:</Category>
@@ -33,16 +31,6 @@ Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining 
       <Display>always</Display>
       <Required>false</Required>
       <Mask>true</Mask>
-    </Variable>
-    <Variable>
-      <Name>TOR_ENABLED</Name>
-      <Value>false</Value>
-      <Mode></Mode>
-      <Description>Set to true to enable a Tor SOCKS5 proxy (127.0.0.1:9050) and onion hidden service for anonymous Monero P2P connections. Hidden service exposes port 18080 P2P only — not RPC.</Description>
-      <Display>always</Display>
-      <DisplayName>Tor (Enable Tor Proxy + Hidden Service)</DisplayName>
-      <Required>false</Required>
-      <Mask>false</Mask>
     </Variable>
     <Variable>
       <Name>SCREEN_RESOLUTION</Name>
@@ -128,15 +116,7 @@ Set your Monero wallet address inside the Gupax GUI itself (P2Pool tab). Mining 
       <Mode>rw</Mode>
       <Description>Monero blockchain data. In Gupax UI, go to Node tab and set database path to /home/miner/.bitmonero</Description>
       <Display>always</Display>
-    </Volume>
-    <Volume>
-      <HostDir>/mnt/user/appdata/gupax/tor</HostDir>
-      <ContainerDir>/home/miner/.tor</ContainerDir>
-      <Mode>rw</Mode>
-      <Description>Tor hidden service keys (optional). Mount this to keep the same .onion address across container restarts. Only used when TOR_ENABLED=true.</Description>
-      <Display>advanced</Display>
-    </Volume>
-  </Volumes>
+    </Volume>  </Volumes>
 
   <!-- ============================================================ -->
   <!-- Restart Policy                                               -->
