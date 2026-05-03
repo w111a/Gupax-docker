@@ -43,6 +43,18 @@ jobs:
           echo "Latest Gupax version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,prefix=,suffix=
+            type=sha,prefix=,suffix=
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.ref_name == 'main' }}
+          flavor: |
+            latest=${{ github.ref_name == 'main' }}
+
       - name: Build and push to Docker Hub
         uses: docker/build-push-action@v6
         with:
@@ -50,9 +62,7 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
