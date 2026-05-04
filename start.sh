@@ -66,7 +66,11 @@ mkdir -p /home/miner/.local/share/gupax/p2pool \
          /home/miner/.local/share/gupax/node \
          /home/miner/.local/share/gupax/xmrig \
          /home/miner/.local/share/gupax/xmrig-proxy
-chown -R miner:miner /home/miner/.local/share/gupax
+chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
+
+# Safety net: Unraid FUSE filesystems don't support chown to arbitrary UIDs.
+# Ensure directories are writable regardless of ownership.
+chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
