@@ -42,11 +42,12 @@ jobs:
           VERSION=$(echo "$VERSION" | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
           echo "Latest Gupax version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          # Compute branch-aware tags
+          # Compute branch-aware tags. Replace slashes with hyphens (invalid in Docker tags).
+          SAFE_REF=$(echo "${{ github.ref_name }}" | tr '/' '-')
           if [ "${{ github.ref_name }}" = "main" ]; then
             TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
           else
-            TAGS="${{ env.IMAGE_NAME }}:${{ github.ref_name }}"$'\n'"${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ github.sha }}"
+            TAGS="${{ env.IMAGE_NAME }}:${SAFE_REF}"$'\n'"${{ env.IMAGE_NAME }}:${SAFE_REF}-${{ github.sha }}"
           fi
           echo "Tags: $TAGS"
           echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV

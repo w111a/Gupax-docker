@@ -40,11 +40,13 @@ jobs:
           VERSION=$(curl -s https://api.github.com/repos/gupax-io/gupax/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
           VERSION_STRIPPED="${VERSION#v}"
           echo "Detected Gupax version: $VERSION (tag: $VERSION_STRIPPED)"
-          # Branch-aware tagging: main gets :latest + version, feature branches get their own tag
+          # Branch-aware tagging: main gets :latest + version, feature branches get their own tag.
+          # Slashes in branch names are invalid in Docker tags — replace with hyphens.
+          SAFE_REF=$(echo "${{ github.ref_name }}" | tr '/' '-')
           if [ "${{ github.ref_name }}" = "main" ]; then
             TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION_STRIPPED"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
           else
-            TAGS="${{ env.IMAGE_NAME }}:${{ github.ref_name }}"$'\n'"${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ github.sha }}"
+            TAGS="${{ env.IMAGE_NAME }}:${SAFE_REF}"$'\n'"${{ env.IMAGE_NAME }}:${SAFE_REF}-${{ github.sha }}"
           fi
           echo "Tags: $TAGS"
           echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV
