@@ -58,9 +58,15 @@ echo "============================================="
 
 # Fix volume permissions — container starts as root, no setpriv needed
 echo "[*] Fixing data directory permissions..."
-chown -R miner:miner /home/miner/.local/share/gupax \
-    /home/miner/.local/state/gupax \
-    /home/miner/.bitmonero 2>/dev/null || true
+chown -R miner:miner /home/miner/.local/share/gupax /home/miner/.bitmonero 2>/dev/null || true
+
+# Pre-create Gupax runtime subdirectories so API file writes don't fail
+# with OS error 2 before Gupax has a chance to download binaries
+mkdir -p /home/miner/.local/share/gupax/p2pool \
+         /home/miner/.local/share/gupax/node \
+         /home/miner/.local/share/gupax/xmrig \
+         /home/miner/.local/share/gupax/xmrig-proxy
+chown -R miner:miner /home/miner/.local/share/gupax
 
 # Display number for Xvfb
 DISPLAY_NUM=:1

@@ -13,8 +13,7 @@ services:
       - TOR_ENABLED=false   # Set to true to enable Tor SOCKS5 + hidden service
       # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
     volumes:
-      - gupax-config:/home/miner/.local/state/gupax    # Config (state.toml)
-      - gupax-share:/home/miner/.local/share/gupax      # Runtime data (binaries, logs)
+      - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero  # Blockchain
       # - gupax-tor:/home/miner/.tor  # Uncomment for persistent .onion address
     ports:
@@ -32,7 +31,6 @@ services:
         max-file: "3"
 
 volumes:
-  gupax-config:
-  gupax-share:
+  gupax-data:
   gupax-monero:
   gupax-tor:
