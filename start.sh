@@ -60,12 +60,13 @@ echo "============================================="
 echo "[*] Fixing data directory permissions..."
 chown -R miner:miner /home/miner/.local/share/gupax /home/miner/.bitmonero 2>/dev/null || true
 
-# Pre-create Gupax runtime subdirectories so API file writes don't fail
-# with OS error 2 before Gupax has a chance to download binaries
-mkdir -p /home/miner/.local/share/gupax/p2pool \
-         /home/miner/.local/share/gupax/node \
-         /home/miner/.local/share/gupax/xmrig \
-         /home/miner/.local/share/gupax/xmrig-proxy
+# Pre-create Gupax binary subdirectories on the persistent volume and symlink
+# them into /usr/local/bin/gupax/ so Gupax downloads binaries to the volume,
+# not to the root-owned, non-persistent image layer.
+for dir in p2pool node xmrig xmrig-proxy; do
+    mkdir -p /home/miner/.local/share/gupax/$dir
+    ln -sfn /home/miner/.local/share/gupax/$dir /usr/local/bin/gupax/$dir
+done
 chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
 
 # Safety net: Unraid FUSE filesystems don't support chown to arbitrary UIDs.
