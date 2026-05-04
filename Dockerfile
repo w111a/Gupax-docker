@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zenity \
     tor \
     netcat-openbsd \
+    gosu \
     openbox \
     dbus-x11 \
     dbus \
@@ -159,7 +160,6 @@ RUN mkdir -p /home/miner/.local/share/gupax/p2pool /home/miner/.local/share/gupa
 
 RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero     && ln -sf /home/miner/.bitmonero /usr/local/bin/gupax/node/.bitmonero
 
-USER miner
 WORKDIR /home/miner
 
 # Health check — verify noVNC web interface is responding

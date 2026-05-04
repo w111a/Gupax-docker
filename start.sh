@@ -54,19 +54,9 @@ else
     echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
 fi
 
-# Fix volume permissions if Docker overlay created root-owned directories
-echo "[*] Checking state directory permissions..."
-OWNER=$(stat -c '%U' /home/miner/.local/share/gupax 2>/dev/null || echo "unknown")
-if [ "$OWNER" != "miner" ]; then
-    echo "[!] Volume owned by '$OWNER' (expected: miner). Attempting to fix..."
-    if /usr/bin/setpriv --reuid=0 --regid=0 --init-groups /usr/bin/chown -R miner:miner /home/miner/.local/share/gupax /home/miner/.bitmonero 2>/dev/null; then
-        echo "[+] Permissions fixed"
-    else
-        echo "[!] Could not fix permissions. If the app fails to save settings, set MONERO_DATA_PATH to a host directory with correct owner (UID 999)"
-    fi
-else
-    echo "[+] Data directories owned by miner -- OK"
-fi
+# Fix volume permissions — container starts as root, no setpriv needed
+echo "[*] Fixing data directory permissions..."
+chown -R miner:miner /home/miner/.local/share/gupax /home/miner/.bitmonero 2>/dev/null || true
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
@@ -233,8 +223,15 @@ echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
-/usr/local/bin/gupax/gupax &
-GUPAX_PID=$!
+if command -v gosu >/dev/null 2>&1 && gosu miner true 2>/dev/null; then
+    echo "[*] Dropping to miner user (gosu)..."
+    gosu miner /usr/local/bin/gupax/gupax &
+    GUPAX_PID=$!
+else
+    echo "[*] Running as current user (gosu unavailable)..."
+    /usr/local/bin/gupax/gupax &
+    GUPAX_PID=$!
+fi
 echo "[+] Gupax started (PID $GUPAX_PID)"
 
 # Wait specifically for Gupax — other services dying should NOT kill the container.
