@@ -1,9 +1,10 @@
-name: Docker Build and Push
+name: Docker Build and Push (GHCR)
 
 on:
   push:
     branches:
       - main
+      - feat/tor-node
   workflow_dispatch:
 
 env:
@@ -39,8 +40,17 @@ jobs:
           VERSION=$(curl -s https://api.github.com/repos/gupax-io/gupax/releases/latest | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
           VERSION_STRIPPED="${VERSION#v}"
           echo "Detected Gupax version: $VERSION (tag: $VERSION_STRIPPED)"
-          # Write tags as newline-delimited string to GITHUB_ENV for use in build step
-          TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION_STRIPPED"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          # Branch-aware tagging: main gets latest+version+sha; feat/tor-node gets feat-tor-node+sha
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" = "main" ]; then
+            TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION_STRIPPED"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          elif [ "$BRANCH" = "feat/tor-node" ]; then
+            TAGS="${{ env.IMAGE_NAME }}:feat-tor-node"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          else
+            TAGS="${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          fi
+          echo "Branch: $BRANCH"
+          echo "Tags: $(echo "$TAGS" | tr '\n' ' ')"
           echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV
 
       - name: Build and push Docker image
