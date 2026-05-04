@@ -5,15 +5,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # GUPAX_VERSION and GUPAX_SHA256 are detected automatically at build time
     image: ghcr.io/w111a/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped
     stop_grace_period: 30s
+    environment:
+      - TOR_ENABLED=false   # Set to true to enable Tor SOCKS5 + hidden service
+      # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
     volumes:
-      - gupax-config:/home/miner/.local/state/gupax
-      - gupax-share:/home/miner/.local/share/gupax
-      - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero
+      - gupax-config:/home/miner/.local/state/gupax    # Config (state.toml)
+      - gupax-share:/home/miner/.local/share/gupax      # Runtime data (binaries, logs)
+      - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero  # Blockchain
+      # - gupax-tor:/home/miner/.tor  # Uncomment for persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
       - "5900:5900"   # VNC server (optional)
@@ -32,3 +35,4 @@ volumes:
   gupax-config:
   gupax-share:
   gupax-monero:
+  gupax-tor:

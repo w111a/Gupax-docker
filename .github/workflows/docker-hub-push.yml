@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/tor-node-standalone
     paths:
       - 'Dockerfile'
       - 'docker-compose.yml'
@@ -41,6 +42,14 @@ jobs:
           VERSION=$(echo "$VERSION" | python3 -c "import json,sys; print(json.load(sys.stdin)['tag_name'])")
           echo "Latest Gupax version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # Compute branch-aware tags
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            TAGS="${{ env.IMAGE_NAME }}:latest"$'\n'"${{ env.IMAGE_NAME }}:$VERSION"$'\n'"${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          else
+            TAGS="${{ env.IMAGE_NAME }}:${{ github.ref_name }}"$'\n'"${{ env.IMAGE_NAME }}:${{ github.ref_name }}-${{ github.sha }}"
+          fi
+          echo "Tags: $TAGS"
+          echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV
 
       - name: Build and push to Docker Hub
         uses: docker/build-push-action@v6
@@ -49,10 +58,6 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          tags: ${{ env.TAGS }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-

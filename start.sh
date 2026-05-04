@@ -1,7 +1,8 @@
 #!/bin/bash
 # =============================================================================
 # Gupax-docker Startup Script
-# Starts Xvfb → x11vnc → websockify → Gupax
+# Starts Xvfb → openbox → x11vnc → websockify → Gupax
+# Optional Tor daemon for monerod-over-Tor (TOR_ENABLED=true)
 # =============================================================================
 
 set -e
@@ -25,6 +26,12 @@ cleanup() {
     echo "[*] Stopping x11vnc..."
     kill $X11VNC_PID 2>/dev/null || true
     wait $X11VNC_PID 2>/dev/null || true
+    echo "[*] Stopping openbox..."
+    kill $OPENBOX_PID 2>/dev/null || true
+    wait $OPENBOX_PID 2>/dev/null || true
+    echo "[*] Stopping Tor..."
+    kill $TOR_PID 2>/dev/null || true
+    wait $TOR_PID 2>/dev/null || true
     echo "[*] Stopping Xvfb..."
     kill $XVFB_PID 2>/dev/null || true
     wait $XVFB_PID 2>/dev/null || true
@@ -41,14 +48,98 @@ echo ""
 echo "  noVNC:  http://localhost:6080"
 echo "  VNC:    localhost:5900"
 echo ""
+if [ "${TOR_ENABLED:-false}" = "true" ]; then
+    echo "  Tor:    ENABLED (SOCKS5 127.0.0.1:9050)"
+    echo "  Tip:    Set Node arguments to --proxy=127.0.0.1:9050"
+else
+    echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
+fi
 echo "============================================="
+
+# Fix volume permissions — container starts as root, no setpriv needed
+echo "[*] Fixing data directory permissions..."
+chown -R miner:miner /home/miner/.local/share/gupax \
+    /home/miner/.local/state/gupax \
+    /home/miner/.bitmonero 2>/dev/null || true
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
 
+# ── Tor daemon (optional) ──────────────────────────────────────────────────
+if [ "${TOR_ENABLED:-false}" = "true" ]; then
+    echo "[*] Tor is enabled — starting Tor daemon..."
+
+    # Prepare Tor directories with restrictive permissions (required for HS)
+    mkdir -p /home/miner/.tor
+    chmod 700 /home/miner/.tor
+
+    # Generate minimal torrc: SOCKS5 outbound proxy + hidden service for monerod P2P
+    cat > /home/miner/.tor/torrc <<'TORRC'
+SocksPort 127.0.0.1:9050
+DataDirectory /home/miner/.tor
+PidFile /home/miner/.tor/tor.pid
+HiddenServiceDir /home/miner/.tor/hs_monerod
+HiddenServicePort 18080 127.0.0.1:18084
+TORRC
+    chmod 600 /home/miner/.tor/torrc
+
+    /usr/sbin/tor --torrc-file /home/miner/.tor/torrc &
+    TOR_PID=$!
+
+    echo "[*] Waiting for Tor SOCKS proxy (127.0.0.1:9050) to be ready..."
+    for i in $(seq 1 30); do
+        if nc -z 127.0.0.1 9050 2>/dev/null; then
+            echo "[+] Tor SOCKS proxy is ready (127.0.0.1:9050)"
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo "[!] WARNING: Tor SOCKS proxy did not become ready within 30s — continuing anyway"
+        else
+            sleep 1
+        fi
+    done
+
+    # ── Hidden Service .onion address ───────────────────────────────────────
+    echo "[*] Waiting for hidden service .onion address..."
+    HS_HOSTNAME=""
+    for i in $(seq 1 30); do
+        if [ -f /home/miner/.tor/hs_monerod/hostname ]; then
+            HS_HOSTNAME=$(tr -d '[:space:]' < /home/miner/.tor/hs_monerod/hostname 2>/dev/null)
+            if [ -n "$HS_HOSTNAME" ]; then
+                break
+            fi
+        fi
+        if [ $i -eq 30 ]; then
+            echo "[!] WARNING: Hidden service .onion address not generated in time"
+        else
+            sleep 1
+        fi
+    done
+
+    if [ -n "$HS_HOSTNAME" ]; then
+        echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
+        HS_KEY="${HS_HOSTNAME}"
+        echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
+        echo "    --proxy=127.0.0.1:9050"
+        echo "    --tx-proxy=tor,127.0.0.1:9050"
+        echo "    --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40"
+        # Persist for reference across container restarts
+        cat > /home/miner/.tor/monerod_onion.txt <<EOF
+Monero Node .onion: ${HS_HOSTNAME}
+Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40
+Outbound proxy:    --proxy=127.0.0.1:9050
+Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
+Set both in Gupax → Node tab → Arguments
+EOF
+    fi
+else
+    TOR_PID=""
+fi
+
 # Remove stale X lock file and socket from previous runs
 rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null
+rm -rf /tmp/.X11-unix 2>/dev/null || true
 
 # Kill any stale Xvfb process still holding the display
 for pid in $(pidof Xvfb 2>/dev/null); do
@@ -70,13 +161,35 @@ if ! kill -0 $XVFB_PID 2>/dev/null; then
 fi
 echo "[+] Xvfb started on $DISPLAY_NUM"
 
+# Start openbox (window manager — required for XI2 keyboard focus routing)
+echo "[*] Starting openbox..."
+openbox &>/dev/null &
+OPENBOX_PID=$!
+sleep 0.5
+if ! kill -0 $OPENBOX_PID 2>/dev/null; then
+    echo "[!] openbox failed, retrying..."
+    sleep 1
+    openbox &>/dev/null &
+    OPENBOX_PID=$!
+fi
+echo "[+] openbox started (PID $OPENBOX_PID)"
+sleep 1
+
 # Configure keyboard layout for winit (Gupax's windowing library)
 echo "[*] Configuring keyboard layout..."
 setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 -nopw -noxfixes -cursor arrow &
+# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth
+if [ -n "$VNC_PASSWORD" ]; then
+    VNC_FLAGS="-passwd $VNC_PASSWORD"
+    echo "[*] VNC authentication: enabled (VNC_PASSWORD is set)"
+else
+    VNC_FLAGS="-nopw"
+    echo "[*] VNC authentication: DISABLED (set VNC_PASSWORD to enable)"
+fi
+x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 $VNC_FLAGS -noxfixes -cursor arrow &
 X11VNC_PID=$!
 
 # Re-enable X autorepeat that x11vnc disables on client connect (run 3x as x11vnc recommends)
@@ -136,21 +249,25 @@ PORTAL_PID=$!
 echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
-# Note: container already runs as 'miner' user (see USER directive in Dockerfile)
-# No gosu/su needed — we are already miner.
 echo "[*] Starting Gupax..."
-/usr/local/bin/gupax/gupax &
-GUPAX_PID=$!
+if command -v gosu >/dev/null 2>&1 && gosu miner true 2>/dev/null; then
+    echo "[*] Dropping to miner user (gosu)..."
+    gosu miner /usr/local/bin/gupax/gupax &
+    GUPAX_PID=$!
+else
+    echo "[*] Running as current user (gosu unavailable)..."
+    /usr/local/bin/gupax/gupax &
+    GUPAX_PID=$!
+fi
+echo "[+] Gupax started (PID $GUPAX_PID)"
 
-# Wait for any process to exit — this is what keeps the container running.
-# When Gupax exits, cleanup() runs and stops everything.
+# Wait specifically for Gupax — other services dying should NOT kill the container.
 echo "[*] All services running. Press Ctrl+C to stop."
 echo ""
-wait -n
+wait $GUPAX_PID
 EXIT_CODE=$?
 
 echo ""
-echo "[*] Main process exited (code: $EXIT_CODE)"
+echo "[*] Gupax exited (code: $EXIT_CODE)"
 cleanup
 exit $EXIT_CODE
-
