@@ -260,13 +260,20 @@ echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
-if command -v gosu >/dev/null 2>&1 && gosu miner true 2>/dev/null; then
-    echo "[*] Dropping to miner user (gosu)..."
-    gosu miner /usr/local/bin/gupax/gupax &
+
+# Detect the user to run Gupax as, matching the data volume owner.
+# Auto-detected from volume owner; override with PUID/PGID env vars.
+# On Unraid/FUSE shares where chown fails, set PUID=99 PGID=100.
+PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
+PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
+
+if command -v gosu >/dev/null 2>&1 && gosu "$PUID:$PGID" true 2>/dev/null; then
+    echo "[*] Running Gupax as UID:$PUID GID:$PGID"
+    gosu "$PUID:$PGID" env HOME=/home/miner /usr/local/bin/gupax/gupax &
     GUPAX_PID=$!
 else
-    echo "[*] Running as current user (gosu unavailable)..."
-    /usr/local/bin/gupax/gupax &
+    echo "[*] gosu unavailable — running as current user (rootless Docker?)"
+    HOME=/home/miner /usr/local/bin/gupax/gupax &
     GUPAX_PID=$!
 fi
 echo "[+] Gupax started (PID $GUPAX_PID)"
