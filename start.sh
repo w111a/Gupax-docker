@@ -266,6 +266,20 @@ echo "[*] Starting xdg-desktop-portal..."
 PORTAL_PID=$!
 echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 
+# ── Inject --restricted-rpc into node arguments (optional) ──────────────
+MONERO_RPC_RESTRICTED="${MONERO_RPC_RESTRICTED:-false}"
+if [ "$MONERO_RPC_RESTRICTED" = "true" ] && [ -f /home/miner/.local/share/gupax/state.toml ]; then
+    # Inject --restricted-rpc at the start of the node section's arguments field.
+    # Uses sed range: only operates between [node] and the next [section].
+    if grep -q '^arguments = .*--restricted-rpc' /home/miner/.local/share/gupax/state.toml 2>/dev/null; then
+        echo "[*] RPC restricted already configured in state.toml — skipping"
+    else
+        echo "[*] Injecting --restricted-rpc into node arguments..."
+        sed -i '/^\[node\]/,/^\[/ s/^arguments = "\(.*\)"/arguments = "--restricted-rpc \1"/' /home/miner/.local/share/gupax/state.toml
+        echo "[+] --restricted-rpc injected into node arguments"
+    fi
+fi
+
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
 
