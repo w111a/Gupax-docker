@@ -249,6 +249,21 @@ ls -ln /path/to/your/blockchain/lmdb/data.mdb
 chown -R 99:100 /path/to/your/blockchain
 ```
 
+> **⚠️ Unraid FUSE caveat:** If your blockchain is on a **user share** path like `/mnt/user/appdata/...`, `chown` will appear to succeed but have **no effect** — Unraid's FUSE overlay filesystem (shfs) silently ignores ownership changes. Use the **direct disk or cache path** instead:
+>
+> ```bash
+> # Correct — bypasses FUSE:
+> chown -R 99:100 /mnt/cache/appdata/gupax/monero
+> # or
+> chown -R 99:100 /mnt/disk1/appdata/gupax/monero
+> ```
+>
+> Verify from inside the container after changing ownership:
+> ```bash
+> docker exec gupaxtornode2 stat /home/miner/.bitmonero/lmdb/data.mdb | grep Uid
+> # Should show: Uid: (99/nobody) — not 999/miner
+> ```
+
 > **Tip:** If you're unsure which UID the container uses, check the startup logs:
 > ```
 > [*] Running Gupax as UID:99 GID:100
@@ -276,6 +291,8 @@ You'll see output like:
 ```
 [+] Monero node hidden service: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
 [+] Recommended monerod arguments (Gupax → Node → Arguments):
+    --p2p-bind-ip=127.0.0.1
+    --no-igd
     --proxy=127.0.0.1:9050
     --tx-proxy=tor,127.0.0.1:9050
     --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
@@ -285,10 +302,10 @@ You'll see output like:
 
 **3. Go to the Node tab** and switch from **Simple** to **Advanced** mode to reveal the **"Start options:"** text box
 
-**4. Paste the three arguments** from the log output into the Start options box:
+**4. Paste the five arguments** from the log output into the Start options box:
 
 ```
---proxy=127.0.0.1:9050 --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
+--p2p-bind-ip=127.0.0.1 --no-igd --proxy=127.0.0.1:9050 --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
 ```
 
 **5. Click Save** (Gupax does not auto-save — if you skip this, the arguments are lost on restart)
