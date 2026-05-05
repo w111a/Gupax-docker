@@ -225,6 +225,36 @@ docker run --rm -v gupax-monero:/data -v /path/to/your/blockchain:/source alpine
 #   - /path/to/your/blockchain:/home/miner/.bitmonero
 ```
 
+#### Ownership Requirements for Existing Blockchain Files
+
+If you mount an existing blockchain from a host directory (not a fresh Docker volume), the container must have **read and write** permission to those files. The container runs Gupax as the user owning the `gupax-data` volume — auto-detected at startup or set via `PUID`/`PGID`.
+
+If the container UID does not match the blockchain file owner, monerod will fail immediately:
+
+```
+Node | Stopped ... Uptime was: [1s], Exit status: [Failed]
+```
+
+**To check and fix ownership:**
+
+```bash
+# 1. Find the container's expected UID/GID
+#    Check PUID/PGID env vars in docker-compose.yml or Unraid template.
+#    Default on Unraid: 99:100 (nobody:users)
+
+# 2. Check current ownership of your blockchain files
+ls -ln /path/to/your/blockchain/lmdb/data.mdb
+
+# 3. Change ownership to match the container (example for Unraid: 99:100)
+chown -R 99:100 /path/to/your/blockchain
+```
+
+> **Tip:** If you're unsure which UID the container uses, check the startup logs:
+> ```
+> [*] Running Gupax as UID:99 GID:100
+> ```
+> Then run `chown -R <UID>:<GID> /path/to/your/blockchain` to match.
+
 ---
 
 ## 🔐 Security Notes
