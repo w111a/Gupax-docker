@@ -257,6 +257,64 @@ chown -R 99:100 /path/to/your/blockchain
 
 ---
 
+## 🧅 Tor (Optional)
+
+When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's P2P port as a `.onion` address. This lets monerod route all P2P traffic through Tor for privacy.
+
+> **Note:** Currently you must manually configure monerod to use Tor. The goal is to make this automatic in a future release — see [#12](https://github.com/w111a/Gupax-docker/issues/12) for tracking.
+
+### Step-by-Step: Configuring monerod to Use Tor
+
+**1. Find your `.onion` address in the container logs**
+
+```bash
+docker logs gupax-feat 2>&1 | grep -A5 "Monero node hidden service"
+```
+
+You'll see output like:
+
+```
+[+] Monero node hidden service: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
+[+] Recommended monerod arguments (Gupax → Node → Arguments):
+    --proxy=127.0.0.1:9050
+    --tx-proxy=tor,127.0.0.1:9050
+    --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
+```
+
+**2. Open the Gupax web UI** at `http://your-server:6080`
+
+**3. Go to the Node tab** and switch from **Simple** to **Advanced** mode to reveal the **"Start options:"** text box
+
+**4. Paste the three arguments** from the log output into the Start options box:
+
+```
+--proxy=127.0.0.1:9050 --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
+```
+
+**5. Click Save** (Gupax does not auto-save — if you skip this, the arguments are lost on restart)
+
+**6. Click Start** to launch monerod over Tor
+
+### Example (Unraid)
+
+```bash
+# Step 1: Get the .onion and arguments from the logs
+root@UnRaid:~# docker logs gupaxtornode2 2>&1 | grep -A5 "Monero node hidden service"
+[+] Monero node hidden service: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
+[+] Recommended monerod arguments (Gupax → Node → Arguments):
+    --proxy=127.0.0.1:9050
+    --tx-proxy=tor,127.0.0.1:9050
+    --anonymous-inbound=dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion,127.0.0.1:18084,40
+
+# Step 2-6: Open Gupax UI → Node tab → Advanced → paste arguments → Save → Start
+```
+
+### Keeping the Same .onion Across Restarts
+
+Mount the `gupax-tor` volume (enabled by default in `docker-compose.yml`) to persist the hidden service private key at `/home/miner/.tor/hs_monerod/hs_ed25519_secret_key`. As long as that file survives, your `.onion` address stays the same across container recreations.
+
+---
+
 ## 🔐 Security Notes
 
 - The noVNC interface has **no password by default**
