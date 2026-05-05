@@ -85,6 +85,7 @@ if [ "${TOR_ENABLED:-false}" = "true" ]; then
 
     # Prepare Tor directories with restrictive permissions (required for HS)
     mkdir -p /home/miner/.tor
+    chown root:root /home/miner/.tor
     chmod 700 /home/miner/.tor
 
     # Generate minimal torrc: SOCKS5 outbound proxy + hidden service for monerod P2P
