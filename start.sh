@@ -58,7 +58,7 @@ echo "============================================="
 
 # Fix volume permissions — container starts as root, no setpriv needed
 echo "[*] Fixing data directory permissions..."
-chown -R miner:miner /home/miner/.local/share/gupax /home/miner/.bitmonero 2>/dev/null || true
+chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
 
 # Pre-create Gupax binary subdirectories on the persistent volume and symlink
 # them into /usr/local/bin/gupax/ so Gupax downloads binaries to the volume,
@@ -94,7 +94,7 @@ SocksPort 127.0.0.1:9050
 DataDirectory /home/miner/.tor
 PidFile /home/miner/.tor/tor.pid
 HiddenServiceDir /home/miner/.tor/hs_monerod
-HiddenServicePort 18080 127.0.0.1:18084
+HiddenServicePort 18084 127.0.0.1:18083
 TORRC
     chmod 600 /home/miner/.tor/torrc
 
@@ -140,14 +140,14 @@ TORRC
         echo "    --no-igd"
         echo "    --proxy=127.0.0.1:9050"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
-        echo "    --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40"
+        echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
 Restricted RPC:     --restricted-rpc
 P2P bind IP:       --p2p-bind-ip=127.0.0.1
 No IGD:            --no-igd
-Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40
+Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40
 Outbound proxy:    --proxy=127.0.0.1:9050
 Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
 Set both in Gupax → Node tab → Arguments
