@@ -135,9 +135,7 @@ TORRC
         echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
-        if [ "${MONERO_RPC_RESTRICTED:-false}" = "true" ]; then
-            echo "    --restricted-rpc"
-        fi
+        echo "    --restricted-rpc"
         echo "    --p2p-bind-ip=127.0.0.1"
         echo "    --no-igd"
         echo "    --proxy=127.0.0.1:9050"
@@ -146,13 +144,7 @@ TORRC
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
-EOF
-        if [ "${MONERO_RPC_RESTRICTED:-false}" = "true" ]; then
-            cat >> /home/miner/.tor/monerod_onion.txt <<EOF
 Restricted RPC:     --restricted-rpc
-EOF
-        fi
-        cat >> /home/miner/.tor/monerod_onion.txt <<EOF
 P2P bind IP:       --p2p-bind-ip=127.0.0.1
 No IGD:            --no-igd
 Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40
