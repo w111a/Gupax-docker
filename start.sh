@@ -135,6 +135,9 @@ TORRC
         echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
+        if [ "${MONERO_RPC_RESTRICTED:-false}" = "true" ]; then
+            echo "    --restricted-rpc"
+        fi
         echo "    --p2p-bind-ip=127.0.0.1"
         echo "    --no-igd"
         echo "    --proxy=127.0.0.1:9050"
@@ -143,6 +146,13 @@ TORRC
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
+EOF
+        if [ "${MONERO_RPC_RESTRICTED:-false}" = "true" ]; then
+            cat >> /home/miner/.tor/monerod_onion.txt <<EOF
+Restricted RPC:     --restricted-rpc
+EOF
+        fi
+        cat >> /home/miner/.tor/monerod_onion.txt <<EOF
 P2P bind IP:       --p2p-bind-ip=127.0.0.1
 No IGD:            --no-igd
 Anonymous inbound: --anonymous-inbound=${HS_KEY},127.0.0.1:18084,40
@@ -265,20 +275,6 @@ echo "[*] Starting xdg-desktop-portal..."
 /usr/libexec/xdg-desktop-portal &
 PORTAL_PID=$!
 echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
-
-# ── Inject --restricted-rpc into node arguments (optional) ──────────────
-MONERO_RPC_RESTRICTED="${MONERO_RPC_RESTRICTED:-false}"
-if [ "$MONERO_RPC_RESTRICTED" = "true" ] && [ -f /home/miner/.local/share/gupax/state.toml ]; then
-    # Inject --restricted-rpc at the start of the node section's arguments field.
-    # Uses sed range: only operates between [node] and the next [section].
-    if grep -q '^arguments = .*--restricted-rpc' /home/miner/.local/share/gupax/state.toml 2>/dev/null; then
-        echo "[*] RPC restricted already configured in state.toml — skipping"
-    else
-        echo "[*] Injecting --restricted-rpc into node arguments..."
-        sed -i '/^\[node\]/,/^\[/ s/^arguments = "\(.*\)"/arguments = "--restricted-rpc \1"/' /home/miner/.local/share/gupax/state.toml
-        echo "[+] --restricted-rpc injected into node arguments"
-    fi
-fi
 
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
