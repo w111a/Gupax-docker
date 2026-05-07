@@ -102,11 +102,10 @@ RUN chmod +x /usr/local/bin/start.sh
 EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081 18082
 
-# Pre-create .bitmonero directory with miner ownership + symlink
-# This fixes monerod's relative path resolution when Gupax launches it
-# from /usr/local/bin/gupax/node/ (its working directory).
-RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero \
-    && ln -sf /home/miner/.bitmonero /usr/local/bin/gupax/.bitmonero
+# Pre-create .bitmonero directory with miner ownership.
+# No .bitmonero symlink needed — monerod resolves its data directory via $HOME
+# (/home/miner) which start.sh passes through gosu to the gupax process.
+RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero
 
 # Container starts as root so start.sh can fix volume permissions.
 # start.sh drops to the miner user via gosu before launching Gupax.
