@@ -49,8 +49,8 @@ echo "  noVNC:  http://localhost:6080"
 echo "  VNC:    localhost:5900"
 echo ""
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
-    echo "  Tor:    ENABLED (SOCKS5 127.0.0.1:9050)"
-    echo "  Tip:    Set Node arguments to --p2p-bind-ip=127.0.0.1 --no-igd --proxy=127.0.0.1:9050"
+    echo "  Tor:    ENABLED — tx-only mode (SOCKS5 127.0.0.1:9050)"
+    echo "  Note:   P2P sync stays on clearnet. Only transactions use Tor."
 else
     echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
 fi
@@ -136,21 +136,17 @@ TORRC
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
         echo "    --restricted-rpc"
-        echo "    --p2p-bind-ip=127.0.0.1"
         echo "    --no-igd"
-        echo "    --proxy=127.0.0.1:9050"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
 Restricted RPC:     --restricted-rpc
-P2P bind IP:       --p2p-bind-ip=127.0.0.1
 No IGD:            --no-igd
 Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40
-Outbound proxy:    --proxy=127.0.0.1:9050
 Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
-Set both in Gupax → Node tab → Arguments
+Paste all four in Gupax → Node tab → Arguments
 EOF
     fi
 else
