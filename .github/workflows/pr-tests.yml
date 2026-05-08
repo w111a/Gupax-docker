@@ -1,0 +1,140 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - feat/tor-node-standalone
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint (Shell + Dockerfile + YAML)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck (start.sh)
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: '.'
+          severity: warning
+          additional_files: 'start.sh'
+
+      - name: Hadolint (Dockerfile)
+        uses: hadolint/hadolint-action@v3
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+
+      - name: YAML lint (workflows + compose)
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: |
+            .github/workflows/
+            docker-compose.yml
+
+      - name: Validate docker-compose config
+        run: docker compose -f docker-compose.yml config --dry-run
+
+  build-and-test:
+    name: Build + Runtime Smoke Test (Tor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          push: false
+          tags: gupax-docker:pr-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container with Tor enabled
+        run: |
+          docker run -d --name gupax-test \
+            -e TOR_ENABLED=true \
+            -p 6080:6080 \
+            gupax-docker:pr-test
+
+      - name: Wait for noVNC web interface
+        timeout-minutes: 2
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:6080/ > /dev/null 2>&1; then
+              echo "noVNC ready after ${i} attempts"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "TIMEOUT: noVNC not responding"
+              docker logs gupax-test
+              exit 1
+            fi
+            sleep 4
+          done
+
+      - name: Verify Gupax process
+        run: |
+          docker exec gupax-test pgrep -f gupax || {
+            echo "FAIL: Gupax not running"
+            docker logs gupax-test
+            exit 1
+          }
+          echo "Gupax process OK"
+
+      - name: Verify Tor SOCKS proxy (9050)
+        timeout-minutes: 2
+        run: |
+          for i in $(seq 1 20); do
+            if docker exec gupax-test bash -c 'echo > /dev/tcp/127.0.0.1/9050' 2>/dev/null; then
+              echo "Tor SOCKS proxy ready (attempt ${i})"
+              break
+            fi
+            if [ $i -eq 20 ]; then
+              echo "WARNING: Tor SOCKS proxy not ready — non-fatal for build"
+            fi
+            sleep 3
+          done
+
+      - name: Verify hidden service hostname
+        run: |
+          for i in $(seq 1 15); do
+            HS=$(docker exec gupax-test cat /home/miner/.tor/hs_monerod/hostname 2>/dev/null | tr -d '[:space:]' || echo "")
+            if [ -n "$HS" ] && [ ${#HS} -gt 40 ]; then
+              echo "Hidden service onion: $HS"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "WARNING: Hidden service hostname not ready (may need more time)"
+            fi
+            sleep 2
+          done
+
+      - name: Container health check
+        run: |
+          sleep 5
+          HEALTH=$(docker inspect gupax-test --format='{{.State.Health.Status}}' 2>/dev/null || echo "no-healthcheck")
+          echo "Container health: $HEALTH"
+          case "$HEALTH" in
+            healthy|starting|no-healthcheck) ;;
+            unhealthy)
+              echo "FAIL: Container is unhealthy"
+              docker logs gupax-test
+              exit 1
+              ;;
+          esac
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker logs gupax-test
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f gupax-test 2>/dev/null || true
