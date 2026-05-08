@@ -273,6 +273,17 @@ echo "[*] Starting Gupax..."
 PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
 PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
 
+# sudo requires the current UID to exist in /etc/passwd, otherwise
+# "sudo: you do not exist in the passwd database" blocks XMRig launch
+# (Gupax on Linux spawns XMRig through pkexec→sudo).
+if ! getent passwd "$PUID" >/dev/null 2>&1; then
+    echo "gupax:x:$PUID:$PGID:Docker user:/home/miner:/bin/bash" >> /etc/passwd
+    echo "[*] Added UID $PUID to /etc/passwd for pkexec→sudo support"
+fi
+if ! getent group "$PGID" >/dev/null 2>&1; then
+    echo "gupax:x:$PGID:" >> /etc/group
+fi
+
 if command -v gosu >/dev/null 2>&1 && gosu "$PUID:$PGID" true 2>/dev/null; then
     echo "[*] Running Gupax as UID:$PUID GID:$PGID"
     gosu "$PUID:$PGID" env HOME=/home/miner /usr/local/bin/gupax/gupax &
