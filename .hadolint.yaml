@@ -1,0 +1,8 @@
+# Hadolint configuration for Gupax-docker
+# https://github.com/hadolint/hadolint
+ignored:
+  - DL3008  # Pin versions in apt-get install (25+ packages, pinned upstream distro)
+  - DL3059  # Multiple consecutive RUN instructions (intentional for readability)
+  - DL4006  # SHELL option not set (default pipefail not needed)
+trustedRegistries:
+  - docker.io
