@@ -28,9 +28,8 @@ jobs:
           failure-threshold: warning
 
       - name: YAML lint (workflows + compose)
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: .github/workflows/ docker-compose.yml
+        run: |
+          yamllint -f github .github/workflows/ docker-compose.yml
 
       - name: Validate docker-compose config
         run: docker compose -f docker-compose.yml config --dry-run
