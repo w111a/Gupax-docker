@@ -51,6 +51,7 @@ echo ""
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
     echo "  Tor:    ENABLED — tx-only mode (SOCKS5 127.0.0.1:9050)"
     echo "  Note:   P2P sync stays on clearnet. Only transactions use Tor."
+    echo "  RPC:    :${TOR_RPC_PORT:-18089} (wallet connection via hidden service)"
 else
     echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
 fi
@@ -96,6 +97,9 @@ PidFile /home/miner/.tor/tor.pid
 HiddenServiceDir /home/miner/.tor/hs_monerod
 HiddenServicePort 18084 127.0.0.1:18086
 TORRC
+
+    # Append wallet RPC hidden service port (env-var-configurable, default 18089)
+    echo "HiddenServicePort ${TOR_RPC_PORT:-18089} 127.0.0.1:18081" >> /home/miner/.tor/torrc
     chmod 600 /home/miner/.tor/torrc
 
     /usr/sbin/tor --torrc-file /home/miner/.tor/torrc &
@@ -139,6 +143,9 @@ TORRC
         echo "    --no-igd"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
+        echo ""
+        echo "[+] Wallet connection (Monero wallet / monero-wallet-cli / monero-wallet-rpc):"
+        echo "    ${HS_KEY}:${TOR_RPC_PORT:-18089}"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
@@ -147,6 +154,9 @@ No IGD:            --no-igd
 Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40
 Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
 Paste all four in Gupax → Node tab → Arguments
+
+Wallet connection (Monero wallet / CLI):
+  ${HS_HOSTNAME}:${TOR_RPC_PORT:-18089}
 EOF
     fi
 else

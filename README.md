@@ -297,6 +297,9 @@ You'll see output like:
     --no-igd
     --tx-proxy=tor,127.0.0.1:9050
     --anonymous-inbound=dqwj5fyc...onion:18084,127.0.0.1:18086,40
+
+[+] Wallet connection (Monero wallet / monero-wallet-cli / monero-wallet-rpc):
+    dqwj5fyc...onion:18089
 ```
 
 **2. Open the Gupax web UI** at `http://your-server:6080`
@@ -330,6 +333,22 @@ The complete Start options line should look like:
 ### Keeping the Same .onion Across Restarts
 
 Mount the `gupax-tor` volume (enabled by default in `docker-compose.yml`) to persist the hidden service private key at `/home/miner/.tor/hs_monerod/hs_ed25519_secret_key`. As long as that file survives, your `.onion` address stays the same across container recreations.
+
+### Connecting a Wallet via Tor
+
+Once monerod is running, you can connect any Monero wallet through the same `.onion` address over the wallet RPC port (default `18089`, configurable via `TOR_RPC_PORT`).
+
+**With a Monero wallet:**
+1. Go to wallet settings / nodes
+2. Add a remote node: `<onion>:18089` (e.g. `dqwj5fyc...onion:18089`)
+3. The wallet syncs and submits transactions entirely through Tor
+
+**With `monero-wallet-cli`:**
+```bash
+monero-wallet-cli --daemon-address <onion>:18089 --proxy 127.0.0.1:9050
+```
+
+> **How it works:** The hidden service forwards `:18089` (or your custom `TOR_RPC_PORT`) → monerod's JSON-RPC at `127.0.0.1:18081`. Wallet sync (`get_blocks.bin`) and transaction submission (`send_raw_transaction`) both flow through this port. Transaction broadcast from monerod to the network uses `--tx-proxy=tor,...` to route through SOCKS5.
 
 ---
 
