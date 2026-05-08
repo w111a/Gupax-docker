@@ -142,7 +142,7 @@ echo ""
 
 # Start D-Bus session for file dialog support (zenity, xdg-desktop-portal, etc.)
 echo "[*] Starting D-Bus session..."
-eval $(dbus-launch --sh-syntax)
+eval "$(dbus-launch --sh-syntax)"
 export DBUS_SESSION_BUS_ADDRESS
 echo "[+] D-Bus session started"
 
