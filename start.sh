@@ -94,7 +94,7 @@ SocksPort 127.0.0.1:9050
 DataDirectory /home/miner/.tor
 PidFile /home/miner/.tor/tor.pid
 HiddenServiceDir /home/miner/.tor/hs_monerod
-HiddenServicePort 18084 127.0.0.1:18083
+HiddenServicePort 18084 127.0.0.1:18086
 TORRC
     chmod 600 /home/miner/.tor/torrc
 
@@ -138,13 +138,13 @@ TORRC
         echo "    --restricted-rpc"
         echo "    --no-igd"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
-        echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40"
+        echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
 Restricted RPC:     --restricted-rpc
 No IGD:            --no-igd
-Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18083,40
+Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40
 Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
 Paste all four in Gupax → Node tab → Arguments
 EOF
