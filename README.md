@@ -274,7 +274,7 @@ chown -R 99:100 /path/to/your/blockchain
 
 ## 🧅 Tor (Optional)
 
-When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's P2P port as a `.onion` address. This lets monerod route all P2P traffic through Tor for privacy.
+When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's transaction-relay port as a `.onion` address. The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; only wallet-originated transactions are routed through Tor hidden services. This keeps bandwidth through Tor negligible while still protecting transaction privacy. For the full rationale, see [issue #27](https://github.com/w111a/Gupax-docker/issues/27).
 
 > **Note:** Currently you must manually configure monerod to use Tor. The goal is to make this automatic in a future release — see [#12](https://github.com/w111a/Gupax-docker/issues/12) for tracking.
 
@@ -283,7 +283,7 @@ When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy
 **1. Find your `.onion` address in the container logs**
 
 ```bash
-docker logs gupax-feat 2>&1 | grep -A5 "Monero node hidden service"
+docker logs gupaxtornode2 2>&1 | grep -A5 "Monero node hidden service"
 ```
 
 You'll see output like:
@@ -291,26 +291,39 @@ You'll see output like:
 ```
 [+] Monero node hidden service: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
 [+] Recommended monerod arguments (Gupax → Node → Arguments):
-    --p2p-bind-ip=127.0.0.1
+    --restricted-rpc
     --no-igd
-    --proxy=127.0.0.1:9050
     --tx-proxy=tor,127.0.0.1:9050
-    --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
+    --anonymous-inbound=dqwj5fyc...onion:18084,127.0.0.1:18086,40
 ```
 
 **2. Open the Gupax web UI** at `http://your-server:6080`
 
 **3. Go to the Node tab** and switch from **Simple** to **Advanced** mode to reveal the **"Start options:"** text box
 
-**4. Paste the five arguments** from the log output into the Start options box:
+**4. ⚠️ Fix the `--data-dir` path first.** Gupax's default is the relative path `.bitmonero`, which does not resolve correctly in this Docker setup. In the Start options box, locate `--data-dir` and change it to the absolute path:
 
 ```
---p2p-bind-ip=127.0.0.1 --no-igd --proxy=127.0.0.1:9050 --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion,127.0.0.1:18084,40
+--data-dir /home/miner/.bitmonero
 ```
 
-**5. Click Save** (Gupax does not auto-save — if you skip this, the arguments are lost on restart)
+> **Why this matters:** Every time you click "Reset to Advanced options" or switch between Simple/Advanced modes, Gupax resets `--data-dir` back to `.bitmonero`. If left as the relative path, monerod will fail to find the blockchain and exit immediately. You must manually correct this each time the options are reset.
 
-**6. Click Start** to launch monerod over Tor
+**5. Paste the four Tor arguments** from the log output (after the `--data-dir` fix):
+
+```
+--restricted-rpc --no-igd --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion:18084,127.0.0.1:18086,40
+```
+
+The complete Start options line should look like:
+
+```
+--data-dir /home/miner/.bitmonero --zmq-pub tcp://127.0.0.1:18083 --rpc-bind-ip 127.0.0.1 --rpc-bind-port 18081 --out-peers 8 --in-peers 16 --log-level 0 --sync-pruned-blocks --enable-dns-blocklist --disable-dns-checkpoints --prune-blockchain --restricted-rpc --no-igd --tx-proxy=tor,127.0.0.1:9050 --anonymous-inbound=dqwj5fyc...onion:18084,127.0.0.1:18086,40
+```
+
+**6. Click Save** (Gupax does not auto-save — if you skip this, the arguments are lost on restart)
+
+**7. Click Start** to launch monerod with Tor
 
 ### Keeping the Same .onion Across Restarts
 
