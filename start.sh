@@ -273,15 +273,20 @@ echo "[*] Starting Gupax..."
 PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
 PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
 
-# sudo requires the current UID to exist in /etc/passwd, otherwise
-# "sudo: you do not exist in the passwd database" blocks XMRig launch
-# (Gupax on Linux spawns XMRig through pkexec→sudo).
+# sudo requires the current UID to exist in both /etc/passwd and /etc/shadow.
+# A raw 'echo' into passwd has no corresponding shadow entry, so sudo fails:
+# "account validation failure, is your account locked?"
+# useradd creates both entries properly and accepts the NOPASSWD sudoers rule.
 if ! getent passwd "$PUID" >/dev/null 2>&1; then
-    echo "gupax:x:$PUID:$PGID:Docker user:/home/miner:/bin/bash" >> /etc/passwd
-    echo "[*] Added UID $PUID to /etc/passwd for pkexec→sudo support"
-fi
-if ! getent group "$PGID" >/dev/null 2>&1; then
-    echo "gupax:x:$PGID:" >> /etc/group
+    groupadd -f -g "$PGID" gupax
+    useradd -o -M -u "$PUID" -g "$PGID" -d /home/miner -s /bin/bash gupax 2>/dev/null || {
+        # Fallback: useradd failed (e.g., read-only rootfs, no shadow).  At minimum get the
+        # user into passwd so the container doesn't crash; XMRig may still fail but won't
+        # bring down Gupax itself.
+        echo "gupax:x:$PUID:$PGID:Docker user:/home/miner:/bin/bash" >> /etc/passwd
+        echo "[!] useradd failed — fallback to /etc/passwd only (XMRig may not start)"
+    }
+    echo "[*] Created gupax user (UID $PUID) for pkexec→sudo support"
 fi
 
 if command -v gosu >/dev/null 2>&1 && gosu "$PUID:$PGID" true 2>/dev/null; then
