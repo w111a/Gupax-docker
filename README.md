@@ -1,8 +1,10 @@
 <img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="600">
 
 > [!WARNING]
-> **⚠️ Work in Progress — Not Ready for Use**
-> This project is actively under development. The Docker setup, configuration, and behavior may change at any time. Do not use in production or with real funds until a stable release is published.
+> **🧪 Final Testing — Proceed with Caution**
+> This branch is in final testing. The container is functional and Tor integration appears
+> to be working, but edge cases may remain. Do not use with real funds until a stable
+> release is published.
 
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/w111a/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/w111a/Gupax-docker/actions)
