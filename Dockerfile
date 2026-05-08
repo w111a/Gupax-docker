@@ -52,10 +52,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && groupadd -r miner \
     && useradd -r -g miner -m -d /home/miner miner
 
-# Allow passwordless sudo for XMRig only — Gupax on Linux spawns XMRig via pkexec
+# Allow passwordless sudo for XMRig — Gupax on Linux spawns XMRig via pkexec
 # which is unavailable in Docker; we provide a pkexec→sudo wrapper instead.
-# Path: where Gupax downloads XMRig at runtime (under gupax-share volume).
-RUN echo "miner ALL=(ALL) NOPASSWD: /home/miner/.local/share/gupax/xmrig/xmrig" > /etc/sudoers.d/gupax-xmrig \
+# Use ALL (not a specific username) because the effective user is the
+# gosu-dropped PUID (e.g., 99 on Unraid), not the image-layer 'miner' user.
+RUN echo "ALL ALL=(ALL) NOPASSWD: /home/miner/.local/share/gupax/xmrig/xmrig" > /etc/sudoers.d/gupax-xmrig \
     && chmod 0440 /etc/sudoers.d/gupax-xmrig
 
 # Provide a pkexec wrapper that delegates to sudo (no PolicyKit agent in container)
