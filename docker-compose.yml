@@ -17,7 +17,7 @@ services:
     volumes:
       - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero  # Blockchain
-      # - gupax-tor:/home/miner/.tor  # Uncomment for persistent .onion address
+      - gupax-tor:/home/miner/.tor                       # Persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
       - "5900:5900"   # VNC server (optional)

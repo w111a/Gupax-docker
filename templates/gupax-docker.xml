@@ -114,6 +114,13 @@ Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cr
       <Description>Monero blockchain data. In Gupax UI, go to Node tab and set database path to /home/miner/.bitmonero</Description>
       <Display>always</Display>
     </Volume>
+    <Volume>
+      <HostDir>/mnt/user/appdata/gupax/tor</HostDir>
+      <ContainerDir>/home/miner/.tor</ContainerDir>
+      <Mode>rw</Mode>
+      <Description>Tor hidden service keys (keeps the same .onion address across container restarts)</Description>
+      <Display>always</Display>
+    </Volume>
   </Volumes>
 
   <!-- ============================================================ -->
