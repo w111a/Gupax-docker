@@ -62,7 +62,11 @@ echo "============================================="
 
 # Fix volume permissions — container starts as root, no setpriv needed
 echo "[*] Fixing data directory permissions..."
-chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
+
+# Detect the user to run Gupax as, matching the data volume owner.
+# Must happen early — chown below needs to target the correct UID/GID.
+PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
+PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
 
 # Pre-create Gupax binary subdirectories on the persistent volume and symlink
 # them into /usr/local/bin/gupax/ so Gupax downloads binaries to the volume,
@@ -71,17 +75,11 @@ for dir in p2pool node xmrig xmrig-proxy; do
     mkdir -p /home/miner/.local/share/gupax/$dir
     ln -sfn /home/miner/.local/share/gupax/$dir /usr/local/bin/gupax/$dir
 done
-chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
 
-# Safety net: Unraid FUSE filesystems (fuse.shfs) silently ignore chown,
-# so chown above may have done nothing.  Detect the filesystem type and
-# apply relaxed permissions only when actually needed.
-# On normal filesystems (ext4, xfs, overlay, etc.) chown already worked;
-# we just keep parent directories traversable in case the gosu UID
-# doesn't match the image-layer 'miner' (999) user.
+# Safety net: Unraid FUSE filesystems (fuse.shfs) silently ignore chown.
+# Detect the filesystem type and apply relaxed permissions only when needed.
 FS_TYPE=$(stat -f -c '%T' /home/miner/.local/share/gupax 2>/dev/null || echo "unknown")
-# Make parent directories traversable by everyone regardless of ownership
-# (needed for any Docker volume, especially on first run).
+# Make parent directories traversable (needed for any Docker volume).
 chmod a+rx /home/miner /home/miner/.local /home/miner/.local/share 2>/dev/null || true
 
 if [ "$FS_TYPE" = "fuse.shfs" ] || [ "$FS_TYPE" = "fuseblk" ]; then
@@ -92,13 +90,13 @@ if [ "$FS_TYPE" = "fuse.shfs" ] || [ "$FS_TYPE" = "fuseblk" ]; then
     chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
     chmod a+rwX /home/miner/.bitmonero 2>/dev/null || true
 else
-    # Normal filesystem: chown already ran successfully above.
-    # Keep things tight — no need for world-writable volumes.
-    echo "[*] Non-FUSE filesystem ($FS_TYPE) — using standard permissions"
-    # Ensure the miner user (UID matches the gosu-dropped user) can access
-    # everything, but don't open it up to the world.
-    chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
+    # Normal filesystem: chown actually works.
+    # Target the gosu-dropped PUID/PGID (detected above), not the image-layer
+    # 'miner' user, so Gupax can write as the correct UID.
+    echo "[*] Non-FUSE filesystem ($FS_TYPE) — applying standard permissions for UID:$PUID GID:$PGID"
+    chown -R "$PUID:$PGID" /home/miner/.local/share/gupax 2>/dev/null || true
     chmod -R u+rwX,go+rX /home/miner/.local/share/gupax 2>/dev/null || true
+    chown "$PUID:$PGID" /home/miner/.bitmonero 2>/dev/null || true
     chmod u+rwX,go+rX /home/miner/.bitmonero 2>/dev/null || true
 fi
 
