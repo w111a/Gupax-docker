@@ -73,11 +73,34 @@ for dir in p2pool node xmrig xmrig-proxy; do
 done
 chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
 
-# Safety net: Unraid FUSE filesystems don't support chown to arbitrary UIDs.
-# Make directories traversable by everyone regardless of ownership.
+# Safety net: Unraid FUSE filesystems (fuse.shfs) silently ignore chown,
+# so chown above may have done nothing.  Detect the filesystem type and
+# apply relaxed permissions only when actually needed.
+# On normal filesystems (ext4, xfs, overlay, etc.) chown already worked;
+# we just keep parent directories traversable in case the gosu UID
+# doesn't match the image-layer 'miner' (999) user.
+FS_TYPE=$(stat -f -c '%T' /home/miner/.local/share/gupax 2>/dev/null || echo "unknown")
+# Make parent directories traversable by everyone regardless of ownership
+# (needed for any Docker volume, especially on first run).
 chmod a+rx /home/miner /home/miner/.local /home/miner/.local/share 2>/dev/null || true
-chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
-chmod a+rwX /home/miner/.bitmonero 2>/dev/null || true
+
+if [ "$FS_TYPE" = "fuse.shfs" ] || [ "$FS_TYPE" = "fuseblk" ]; then
+    # Unraid FUSE: chown is silently ignored, so we resort to world-writable
+    # permissions.  This is the only way to make the volume usable when the
+    # gosu-dropped UID (e.g. 99) doesn't own the backing files.
+    echo "[*] Detected FUSE filesystem ($FS_TYPE) — applying relaxed permissions"
+    chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
+    chmod a+rwX /home/miner/.bitmonero 2>/dev/null || true
+else
+    # Normal filesystem: chown already ran successfully above.
+    # Keep things tight — no need for world-writable volumes.
+    echo "[*] Non-FUSE filesystem ($FS_TYPE) — using standard permissions"
+    # Ensure the miner user (UID matches the gosu-dropped user) can access
+    # everything, but don't open it up to the world.
+    chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
+    chmod -R u+rwX,go+rX /home/miner/.local/share/gupax 2>/dev/null || true
+    chmod u+rwX,go+rX /home/miner/.bitmonero 2>/dev/null || true
+fi
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
