@@ -28,6 +28,10 @@ services:
       - "18081:18081" # Monero RPC
       - "18082:18082" # Monero RPC ZMQ
     # Anonymous inbound hidden service: Tor virtual 18084 → 127.0.0.1:18086
+    # These are internal-only — not exposed to the host (doing so would
+    # bypass Tor and defeat the purpose of anonymous-inbound).
+    # - "18084:18084"  # Tor hidden service virtual port (do NOT expose)
+    # - "18086:18086"  # monerod anonymous-inbound internal bind (do NOT expose)
     logging:
       driver: json-file
       options:
@@ -41,6 +45,11 @@ services:
         reservations:
           cpus: '1.0'
           memory: 1G
+    # Drop all Linux capabilities — none of the services in this container
+    # (Tor, noVNC, Gupax, monerod, P2Pool, XMRig) use privileged ports
+    # (>1024) or require special kernel capabilities at default config.
+    cap_drop:
+      - ALL
 
 volumes:
   gupax-data:
