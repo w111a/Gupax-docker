@@ -26,6 +26,10 @@ cleanup() {
     echo "[*] Stopping x11vnc..."
     kill $X11VNC_PID 2>/dev/null || true
     wait $X11VNC_PID 2>/dev/null || true
+    # Belt-and-suspenders: remove the password temp file on shutdown
+    # in case it wasn't cleaned up during startup (e.g., container was killed
+    # before the startup-time rm could execute).
+    [ -n "$X11VNC_PASSFILE" ] && rm -f "$X11VNC_PASSFILE"
     echo "[*] Stopping openbox..."
     kill $OPENBOX_PID 2>/dev/null || true
     wait $OPENBOX_PID 2>/dev/null || true
@@ -212,6 +216,11 @@ else
         -nopw -noxfixes -cursor arrow &
 fi
 X11VNC_PID=$!
+# x11vnc runs asynchronously (& above) — give it time to read the
+# passwdfile before we remove it.  x11vnc opens the file once at startup;
+# after that the credential doesn't need to sit in /tmp.
+sleep 1
+[ -n "$X11VNC_PASSFILE" ] && rm -f "$X11VNC_PASSFILE"
 
 # Re-enable X autorepeat that x11vnc disables on client connect (run 3x as x11vnc recommends)
 xset r on 2>/dev/null || true
@@ -275,8 +284,11 @@ echo "[*] Starting Gupax..."
 # Detect the user to run Gupax as, matching the data volume owner.
 # Auto-detected from volume owner; override with PUID/PGID env vars.
 # On Unraid/FUSE shares where chown fails, set PUID=99 PGID=100.
-PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
-PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
+#
+# On first run the volume directory may not exist yet (stat fails).
+# Fall back to the image-layer 'miner' user instead of root (UID 0).
+PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
+PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
 
 # sudo requires the current UID to exist in both /etc/passwd and /etc/shadow.
 # A raw 'echo' into passwd has no corresponding shadow entry, so sudo fails:
