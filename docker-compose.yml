@@ -51,6 +51,7 @@ services:
     # Drop all Linux capabilities, then add back only the minimum needed:
     # - SETUID/SETGID: gosu drops privileges from root to the mining user
     # - DAC_OVERRIDE: root must create/write files in /home/miner volume
+    # - FOWNER: required for file operations when ownership changes at runtime
     # - CHOWN: start.sh fixes volume ownership at container startup
     cap_drop:
       - ALL
@@ -58,6 +59,7 @@ services:
       - SETUID
       - SETGID
       - DAC_OVERRIDE
+      - FOWNER
       - CHOWN
 
 volumes:
