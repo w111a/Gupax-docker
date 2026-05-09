@@ -16,6 +16,7 @@ services:
       # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
     volumes:
       - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
+      - gupax-state:/home/miner/.local/state/gupax      # Gupax XDG state (session cache)
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero  # Blockchain
       - gupax-tor:/home/miner/.tor                       # Persistent .onion address
     ports:
@@ -26,13 +27,23 @@ services:
       - "18080:18080" # Monero P2P
       - "18081:18081" # Monero RPC
       - "18082:18082" # Monero RPC ZMQ
+    # Anonymous inbound hidden service: Tor virtual 18084 → 127.0.0.1:18086
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
 
 volumes:
   gupax-data:
+  gupax-state:
   gupax-monero:
   gupax-tor:

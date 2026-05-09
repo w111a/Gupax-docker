@@ -197,15 +197,20 @@ setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth
+# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth.
+# Uses -passwdfile instead of -passwd to avoid exposing the password in
+# /proc/PID/cmdline and to handle passwords with spaces or special characters.
 if [ -n "$VNC_PASSWORD" ]; then
-    VNC_FLAGS="-passwd $VNC_PASSWORD"
+    X11VNC_PASSFILE=$(mktemp)
+    printf '%s' "$VNC_PASSWORD" > "$X11VNC_PASSFILE"
     echo "[*] VNC authentication: enabled (VNC_PASSWORD is set)"
+    x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
+        -passwdfile "$X11VNC_PASSFILE" -noxfixes -cursor arrow &
 else
-    VNC_FLAGS="-nopw"
     echo "[*] VNC authentication: DISABLED (set VNC_PASSWORD to enable)"
+    x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
+        -nopw -noxfixes -cursor arrow &
 fi
-x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 $VNC_FLAGS -noxfixes -cursor arrow &
 X11VNC_PID=$!
 
 # Re-enable X autorepeat that x11vnc disables on client connect (run 3x as x11vnc recommends)

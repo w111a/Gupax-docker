@@ -8,7 +8,7 @@
 # and persisted in /home/miner/.local/share/gupax via the gupax-share volume.
 # =============================================================================
 
-FROM ubuntu:22.04
+FROM ubuntu:22.04@sha256:4fff072216d2d3d6accc8bc09b57c33e474edd726f3f65fbadbb05647ab15fa5
 
 # Prevent interactive tzdata prompt from blocking the build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,9 +54,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Allow passwordless sudo for XMRig — Gupax on Linux spawns XMRig via pkexec
 # which is unavailable in Docker; we provide a pkexec→sudo wrapper instead.
-# Use ALL (not a specific username) because the effective user is the
-# gosu-dropped PUID (e.g., 99 on Unraid), not the image-layer 'miner' user.
-RUN echo "ALL ALL=(ALL) NOPASSWD: /home/miner/.local/share/gupax/xmrig/xmrig" > /etc/sudoers.d/gupax-xmrig \
+# Restrict to %gupax group (created by start.sh's useradd for the gosu-dropped
+# UID) rather than ALL, to limit the writable-volume sudo escalation surface.
+RUN echo "%gupax ALL=(ALL) NOPASSWD: /home/miner/.local/share/gupax/xmrig/xmrig" > /etc/sudoers.d/gupax-xmrig \
     && chmod 0440 /etc/sudoers.d/gupax-xmrig
 
 # Provide a pkexec wrapper that delegates to sudo (no PolicyKit agent in container)
