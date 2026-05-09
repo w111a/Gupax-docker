@@ -45,11 +45,17 @@ services:
         reservations:
           cpus: '1.0'
           memory: 1G
-    # Drop all Linux capabilities — none of the services in this container
-    # (Tor, noVNC, Gupax, monerod, P2Pool, XMRig) use privileged ports
-    # (>1024) or require special kernel capabilities at default config.
+    # Drop all Linux capabilities, then add back only the minimum needed:
+    # - SETUID/SETGID: gosu drops privileges from root to the mining user
+    # - DAC_OVERRIDE: root must create/write files in /home/miner volume
+    # - CHOWN: start.sh fixes volume ownership at container startup
     cap_drop:
       - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - CHOWN
 
 volumes:
   gupax-data:
