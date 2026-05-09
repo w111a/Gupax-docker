@@ -282,8 +282,16 @@ PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "
 # A raw 'echo' into passwd has no corresponding shadow entry, so sudo fails:
 # "account validation failure, is your account locked?"
 # useradd creates both entries properly and accepts the NOPASSWD sudoers rule.
+#
+# The Dockerfile sudoers rule uses %gupax (group-based).  On many systems
+# (Unraid especially) PUID=99/PGID=100 maps to nobody:users / nobody:nogroup,
+# so group GID 100 already belongs to a system group.  groupadd -f will
+# silently skip the conflicting GID and assign a different numeric ID,
+# meaning the new user is NOT a member of the gupax group and sudoers never
+# matches.  To fix this we unconditionally add the user to gupax as a
+# supplementary group after creation.
 if ! getent passwd "$PUID" >/dev/null 2>&1; then
-    groupadd -f -g "$PGID" gupax
+    groupadd -f gupax
     useradd -o -M -u "$PUID" -g "$PGID" -d /home/miner -s /bin/bash gupax 2>/dev/null || {
         # Fallback: useradd failed (e.g., read-only rootfs, no shadow).  At minimum get the
         # user into passwd so the container doesn't crash; XMRig may still fail but won't
@@ -291,6 +299,7 @@ if ! getent passwd "$PUID" >/dev/null 2>&1; then
         echo "gupax:x:$PUID:$PGID:Docker user:/home/miner:/bin/bash" >> /etc/passwd
         echo "[!] useradd failed — fallback to /etc/passwd only (XMRig may not start)"
     }
+    usermod -a -G gupax gupax 2>/dev/null || true
     echo "[*] Created gupax user (UID $PUID) for pkexec→sudo support"
 fi
 
