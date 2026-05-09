@@ -302,15 +302,9 @@ echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
 
-# Detect the user to run Gupax as, matching the data volume owner.
-# Auto-detected from volume owner; override with PUID/PGID env vars.
-# On Unraid/FUSE shares where chown fails, set PUID=99 PGID=100.
+# PUID/PGID were already detected (or overridden by env vars) during the
+# permission-fix block above — no need to rediscover them.
 #
-# On first run the volume directory may not exist yet (stat fails).
-# Fall back to the image-layer 'miner' user instead of root (UID 0).
-PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
-PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
-
 # sudo requires the current UID to exist in both /etc/passwd and /etc/shadow.
 # A raw 'echo' into passwd has no corresponding shadow entry, so sudo fails:
 # "account validation failure, is your account locked?"
