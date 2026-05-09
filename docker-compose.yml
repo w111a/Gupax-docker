@@ -21,7 +21,10 @@ services:
       - gupax-tor:/home/miner/.tor                       # Persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
-      - "5900:5900"   # VNC server (optional)
+      # VNC server — only uncomment if you've set VNC_PASSWORD above.
+      # Exposing raw VNC without a password gives anyone on your network
+      # full GUI control (change wallets, start/stop mining, etc.).
+      # - "5900:5900"
       - "3333:3333"   # P2Pool stratum server
       - "37889:37889" # P2Pool Monero node ZMQ
       - "18080:18080" # Monero P2P
