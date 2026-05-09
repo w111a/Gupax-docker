@@ -102,6 +102,8 @@ RUN chmod +x /usr/local/bin/start.sh
 
 EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081 18082
+# Tor hidden service ports (internal only — documented for debugging)
+EXPOSE 18084 18086
 
 # Pre-create .bitmonero directory with miner ownership.
 # No .bitmonero symlink needed — monerod resolves its data directory via $HOME
