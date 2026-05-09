@@ -33,6 +33,33 @@ Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cr
       <Mask>false</Mask>
     </Variable>
     <Variable>
+      <Name>VNC_PASSWORD</Name>
+      <Value></Value>
+      <Mode></Mode>
+      <Description>Password for VNC web interface access (leave empty for no authentication)</Description>
+      <Display>always</Display>
+      <Required>false</Required>
+      <Mask>true</Mask>
+    </Variable>
+    <Variable>
+      <Name>PUID</Name>
+      <Value>99</Value>
+      <Mode></Mode>
+      <Description>User ID for file permissions (Unraid default: 99)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
+      <Name>PGID</Name>
+      <Value>100</Value>
+      <Mode></Mode>
+      <Description>Group ID for file permissions (Unraid default: 100)</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
+    <Variable>
       <Name>SCREEN_RESOLUTION</Name>
       <Value>1920x1080x24</Value>
       <Mode></Mode>
