@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ghcr.io/w111a/gupax-docker
+  IMAGE_NAME: ghcr.io/libre-7/gupax-docker
 
 jobs:
   build-and-push:
