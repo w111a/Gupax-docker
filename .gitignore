@@ -1,0 +1,18 @@
+.env
+.env.*
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Docker
+*.tar
+*.tar.gz
+
+# Tor
+hs_monerod/
+*.onion
+tor-data/

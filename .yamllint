@@ -1,0 +1,14 @@
+extends: default
+
+rules:
+  truthy:
+    # GitHub Actions workflow triggers (on: push, on: pull_request, etc.)
+    # are valid YAML booleans-adjacent values that yamllint flags
+    allowed-values: ["true", "false"]
+    check-keys: false
+  line-length: disable
+  document-start: disable
+  indentation:
+    spaces: 2
+  comments:
+    min-spaces-from-content: 1
