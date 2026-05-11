@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feat/tor-node-standalone
     paths:
       - 'Dockerfile'
       - 'docker-compose.yml'
