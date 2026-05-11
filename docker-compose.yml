@@ -16,23 +16,54 @@ services:
       # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
     volumes:
       - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
+      - gupax-state:/home/miner/.local/state/gupax      # Gupax XDG state (session cache)
       - ${MONERO_DATA_PATH:-gupax-monero}:/home/miner/.bitmonero  # Blockchain
       - gupax-tor:/home/miner/.tor                       # Persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
-      - "5900:5900"   # VNC server (optional)
+      # VNC server — only uncomment if you've set VNC_PASSWORD above.
+      # Exposing raw VNC without a password gives anyone on your network
+      # full GUI control (change wallets, start/stop mining, etc.).
+      # - "5900:5900"
       - "3333:3333"   # P2Pool stratum server
       - "37889:37889" # P2Pool Monero node ZMQ
       - "18080:18080" # Monero P2P
       - "18081:18081" # Monero RPC
       - "18082:18082" # Monero RPC ZMQ
+    # Anonymous inbound hidden service: Tor virtual 18084 → 127.0.0.1:18086
+    # These are internal-only — not exposed to the host (doing so would
+    # bypass Tor and defeat the purpose of anonymous-inbound).
+    # - "18084:18084"  # Tor hidden service virtual port (do NOT expose)
+    # - "18086:18086"  # monerod anonymous-inbound internal bind (do NOT expose)
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    # Drop all Linux capabilities, then add back only the minimum needed:
+    # - SETUID/SETGID: gosu drops privileges from root to the mining user
+    # - DAC_OVERRIDE: root must create/write files in /home/miner volume
+    # - FOWNER: required for file operations when ownership changes at runtime
+    # - CHOWN: start.sh fixes volume ownership at container startup
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
+      - CHOWN
 
 volumes:
   gupax-data:
+  gupax-state:
   gupax-monero:
   gupax-tor:

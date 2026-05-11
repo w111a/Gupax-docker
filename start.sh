@@ -26,6 +26,10 @@ cleanup() {
     echo "[*] Stopping x11vnc..."
     kill $X11VNC_PID 2>/dev/null || true
     wait $X11VNC_PID 2>/dev/null || true
+    # Belt-and-suspenders: remove the password temp file on shutdown
+    # in case it wasn't cleaned up during startup (e.g., container was killed
+    # before the startup-time rm could execute).
+    [ -n "$X11VNC_PASSFILE" ] && rm -f "$X11VNC_PASSFILE"
     echo "[*] Stopping openbox..."
     kill $OPENBOX_PID 2>/dev/null || true
     wait $OPENBOX_PID 2>/dev/null || true
@@ -59,7 +63,11 @@ echo "============================================="
 
 # Fix volume permissions — container starts as root, no setpriv needed
 echo "[*] Fixing data directory permissions..."
-chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
+
+# Detect the user to run Gupax as, matching the data volume owner.
+# Must happen early — chown below needs to target the correct UID/GID.
+PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
+PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "999")}
 
 # Pre-create Gupax binary subdirectories on the persistent volume and symlink
 # them into /usr/local/bin/gupax/ so Gupax downloads binaries to the volume,
@@ -68,13 +76,30 @@ for dir in p2pool node xmrig xmrig-proxy; do
     mkdir -p /home/miner/.local/share/gupax/$dir
     ln -sfn /home/miner/.local/share/gupax/$dir /usr/local/bin/gupax/$dir
 done
-chown -R miner:miner /home/miner/.local/share/gupax 2>/dev/null || true
 
-# Safety net: Unraid FUSE filesystems don't support chown to arbitrary UIDs.
-# Make directories traversable by everyone regardless of ownership.
+# Safety net: Unraid FUSE filesystems (fuse.shfs) silently ignore chown.
+# Detect the filesystem type and apply relaxed permissions only when needed.
+FS_TYPE=$(stat -f -c '%T' /home/miner/.local/share/gupax 2>/dev/null || echo "unknown")
+# Make parent directories traversable (needed for any Docker volume).
 chmod a+rx /home/miner /home/miner/.local /home/miner/.local/share 2>/dev/null || true
-chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
-chmod a+rwX /home/miner/.bitmonero 2>/dev/null || true
+
+if [ "$FS_TYPE" = "fuse.shfs" ] || [ "$FS_TYPE" = "fuseblk" ]; then
+    # Unraid FUSE: chown is silently ignored, so we resort to world-writable
+    # permissions.  This is the only way to make the volume usable when the
+    # gosu-dropped UID (e.g. 99) doesn't own the backing files.
+    echo "[*] Detected FUSE filesystem ($FS_TYPE) — applying relaxed permissions"
+    chmod -R a+rwX /home/miner/.local/share/gupax 2>/dev/null || true
+    chmod a+rwX /home/miner/.bitmonero 2>/dev/null || true
+else
+    # Normal filesystem: chown actually works.
+    # Target the gosu-dropped PUID/PGID (detected above), not the image-layer
+    # 'miner' user, so Gupax can write as the correct UID.
+    echo "[*] Non-FUSE filesystem ($FS_TYPE) — applying standard permissions for UID:$PUID GID:$PGID"
+    chown -R "$PUID:$PGID" /home/miner/.local/share/gupax 2>/dev/null || true
+    chmod -R u+rwX,go+rX /home/miner/.local/share/gupax 2>/dev/null || true
+    chown "$PUID:$PGID" /home/miner/.bitmonero 2>/dev/null || true
+    chmod u+rwX,go+rX /home/miner/.bitmonero 2>/dev/null || true
+fi
 
 # Display number for Xvfb
 DISPLAY_NUM=:1
@@ -207,16 +232,26 @@ setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth
+# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth.
+# Uses -passwdfile instead of -passwd to avoid exposing the password in
+# /proc/PID/cmdline and to handle passwords with spaces or special characters.
 if [ -n "$VNC_PASSWORD" ]; then
-    VNC_FLAGS="-passwd $VNC_PASSWORD"
+    X11VNC_PASSFILE=$(mktemp)
+    printf '%s' "$VNC_PASSWORD" > "$X11VNC_PASSFILE"
     echo "[*] VNC authentication: enabled (VNC_PASSWORD is set)"
+    x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
+        -passwdfile "$X11VNC_PASSFILE" -noxfixes -cursor arrow &
 else
-    VNC_FLAGS="-nopw"
     echo "[*] VNC authentication: DISABLED (set VNC_PASSWORD to enable)"
+    x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
+        -nopw -noxfixes -cursor arrow &
 fi
-x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 $VNC_FLAGS -noxfixes -cursor arrow &
 X11VNC_PID=$!
+# x11vnc runs asynchronously (& above) — give it time to read the
+# passwdfile before we remove it.  x11vnc opens the file once at startup;
+# after that the credential doesn't need to sit in /tmp.
+sleep 1
+[ -n "$X11VNC_PASSFILE" ] && rm -f "$X11VNC_PASSFILE"
 
 # Re-enable X autorepeat that x11vnc disables on client connect (run 3x as x11vnc recommends)
 xset r on 2>/dev/null || true
@@ -277,18 +312,23 @@ echo "[+] xdg-desktop-portal started (PID $PORTAL_PID)"
 # Start Gupax — runs as child of this script so cleanup() can manage it
 echo "[*] Starting Gupax..."
 
-# Detect the user to run Gupax as, matching the data volume owner.
-# Auto-detected from volume owner; override with PUID/PGID env vars.
-# On Unraid/FUSE shares where chown fails, set PUID=99 PGID=100.
-PUID=${PUID:-$(stat -c '%u' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
-PGID=${PGID:-$(stat -c '%g' /home/miner/.local/share/gupax 2>/dev/null || echo "0")}
-
+# PUID/PGID were already detected (or overridden by env vars) during the
+# permission-fix block above — no need to rediscover them.
+#
 # sudo requires the current UID to exist in both /etc/passwd and /etc/shadow.
 # A raw 'echo' into passwd has no corresponding shadow entry, so sudo fails:
 # "account validation failure, is your account locked?"
 # useradd creates both entries properly and accepts the NOPASSWD sudoers rule.
+#
+# The Dockerfile sudoers rule uses %gupax (group-based).  On many systems
+# (Unraid especially) PUID=99/PGID=100 maps to nobody:users / nobody:nogroup,
+# so group GID 100 already belongs to a system group.  groupadd -f will
+# silently skip the conflicting GID and assign a different numeric ID,
+# meaning the new user is NOT a member of the gupax group and sudoers never
+# matches.  To fix this we unconditionally add the user to gupax as a
+# supplementary group after creation.
 if ! getent passwd "$PUID" >/dev/null 2>&1; then
-    groupadd -f -g "$PGID" gupax
+    groupadd -f gupax
     useradd -o -M -u "$PUID" -g "$PGID" -d /home/miner -s /bin/bash gupax 2>/dev/null || {
         # Fallback: useradd failed (e.g., read-only rootfs, no shadow).  At minimum get the
         # user into passwd so the container doesn't crash; XMRig may still fail but won't
@@ -296,6 +336,7 @@ if ! getent passwd "$PUID" >/dev/null 2>&1; then
         echo "gupax:x:$PUID:$PGID:Docker user:/home/miner:/bin/bash" >> /etc/passwd
         echo "[!] useradd failed — fallback to /etc/passwd only (XMRig may not start)"
     }
+    usermod -a -G gupax gupax 2>/dev/null || true
     echo "[*] Created gupax user (UID $PUID) for pkexec→sudo support"
 fi
 
