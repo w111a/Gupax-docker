@@ -17,8 +17,8 @@ ENV TZ=UTC
 # Xvfb display for headless GUI
 ENV DISPLAY=:1
 
-# VNC password — set VNC_PASSWORD to require auth; leave empty for no auth
-ENV VNC_PASSWORD=
+# VNC password — set VNC_AUTH_TOKEN to require auth; leave empty for no auth
+ENV VNC_AUTH_TOKEN=
 
 # Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
