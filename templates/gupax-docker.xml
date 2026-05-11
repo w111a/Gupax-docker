@@ -1,20 +1,31 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>ghcr.io/w111a/gupax-docker:feat-tor-node-standalone</Repository>
-  <Registry>ghcr.io/w111a/gupax-docker</Registry>
+  <Repository>ghcr.io/libre-7/gupax-docker:latest</Repository>
+  <Registry>https://ghcr.io</Registry>
   <Network>bridge</Network>
+  <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/w111a/Gupax-docker/issues</Support>
-  <Project>https://github.com/w111a/Gupax-docker</Project>
-  <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.
+  <Support>https://github.com/libre-7/Gupax-docker/issues</Support>
+  <Project>https://github.com/libre-7/Gupax-docker</Project>
+  <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.</Overview>
+  <Description>
+    Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via a noVNC web interface.
 
-Access the GUI at http://your-unraid-ip:6080 - just open in your browser, no X11 needed.
+    Access the GUI at http://your-unraid-ip:6080 — just open in your browser, no X11 needed.
 
-Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cryptocurrency consumes significant electricity and may not be profitable.</Overview>
-  <Category>Crypto:</Category>
+    Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cryptocurrency consumes significant electricity and may not be profitable.
+
+    Features:
+    • Browser-based GUI via noVNC (port 6080)
+    • P2Pool decentralized mining + XMRig
+    • Optional Tor hidden service for private transaction relay
+    • Persistent config, blockchain, and Tor keys across container restarts
+  </Description>
+  <Category>Crypto:Tools</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/libre-7/Gupax-docker/main/templates/gupax-docker.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png</Icon>
   <ExtraParams></ExtraParams>
   <PostArgs></PostArgs>

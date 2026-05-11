@@ -7,8 +7,8 @@
 > release is published.
 
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/w111a/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/w111a/Gupax-docker/actions)
-[![License](https://img.shields.io/github/license/w111a/Gupax-docker?style=flat-square&color=blue)](https://github.com/w111a/Gupax-docker/blob/main/LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/libre-7/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/libre-7/Gupax-docker/actions)
+[![License](https://img.shields.io/github/license/libre-7/Gupax-docker?style=flat-square&color=blue)](https://github.com/libre-7/Gupax-docker/blob/main/LICENSE)
 [![Docker Hub](https://img.shields.io/docker/pulls/libre7/gupax-docker?style=flat-square&color=blue&logo=docker)](https://hub.docker.com/r/libre7/gupax-docker)
 [![Image Size](https://img.shields.io/docker/image-size/libre7/gupax-docker/latest?style=flat-square&logo=docker&color=blueviolet)](https://hub.docker.com/r/libre7/gupax-docker)
 
@@ -47,7 +47,7 @@
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/w111a/Gupax-docker.git
+git clone https://github.com/libre-7/Gupax-docker.git
 cd Gupax-docker
 
 # 2. Copy and edit environment file
@@ -107,7 +107,7 @@ If Gupax-docker is not yet in the Community Applications store:
 2. Click **Add Container**
 3. Set the **Template URL** to:
    ```
-   https://raw.githubusercontent.com/w111a/gupax-docker/main/templates/gupax-docker.xml
+   https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml
    ```
 4. Fill in the required fields — only **SCREEN_RESOLUTION** is configurable
 5. Click **Apply**
@@ -276,9 +276,9 @@ chown -R 99:100 /path/to/your/blockchain
 
 ## 🧅 Tor (Optional)
 
-When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's transaction-relay port as a `.onion` address. The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; only wallet-originated transactions are routed through Tor hidden services. This keeps bandwidth through Tor negligible while still protecting transaction privacy. For the full rationale, see [issue #27](https://github.com/w111a/Gupax-docker/issues/27).
+When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's transaction-relay port as a `.onion` address. The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; only wallet-originated transactions are routed through Tor hidden services. This keeps bandwidth through Tor negligible while still protecting transaction privacy. For the full rationale, see [issue #27](https://github.com/libre-7/Gupax-docker/issues/27).
 
-> **Note:** Currently you must manually configure monerod to use Tor. The goal is to make this automatic in a future release — see [#12](https://github.com/w111a/Gupax-docker/issues/12) for tracking.
+> **Note:** Currently you must manually configure monerod to use Tor. The goal is to make this automatic in a future release — see [#12](https://github.com/libre-7/Gupax-docker/issues/12) for tracking.
 
 ### Step-by-Step: Configuring monerod to Use Tor
 

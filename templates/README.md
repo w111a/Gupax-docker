@@ -4,7 +4,7 @@ This directory contains the Docker template XML file for installing **Gupax-dock
 
 The Docker image is published to both:
 - **Docker Hub**: [libre7/gupax-docker](https://hub.docker.com/r/libre7/gupax-docker) (recommended for Unraid)
-- **GitHub Container Registry**: [ghcr.io/w111a/gupax-docker](https://github.com/w111a/Gupax-docker/pkgs/container/gupax-docker)
+- **GitHub Container Registry**: [ghcr.io/libre-7/gupax-docker](https://github.com/libre-7/Gupax-docker/pkgs/container/gupax-docker)
 
 ## How to Use
 
@@ -24,7 +24,7 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 2. Click **Add Container**
 3. Set **Template URL** to:
    ```
-   https://raw.githubusercontent.com/w111a/Gupax-docker/main/templates/gupax-docker.xml
+   https://raw.githubusercontent.com/libre-7/Gupax-docker/main/templates/gupax-docker.xml
    ```
 4. Fill in fields as needed — no WALLET_ADDRESS required (set it in the Gupax GUI)
 5. Click **Apply**
@@ -34,7 +34,7 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 1. Go to **Apps** tab → **Settings** (gear icon)
 2. In **Template repositories**, add:
    ```
-   https://github.com/w111a/Gupax-docker
+   https://github.com/libre-7/Gupax-docker
    ```
 3. Refresh the Apps page
 4. Search for **"gupax"** and install
