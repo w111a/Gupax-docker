@@ -55,6 +55,15 @@ echo ""
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
     echo "  Tor:    ENABLED — tx-only mode (SOCKS5 127.0.0.1:9050)"
     echo "  Note:   P2P sync stays on clearnet. Only transactions use Tor."
+    if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
+        RPC_STATUS="restricted"
+    else
+        RPC_STATUS="UNRESTRICTED ⚠️"
+    fi
+    if [ -n "${MONERO_RPC_USER:-}" ] && [ -n "${MONERO_RPC_PASSWORD:-}" ]; then
+        RPC_STATUS="${RPC_STATUS}, rpc-login user=${MONERO_RPC_USER}"
+    fi
+    echo "  RPC:    ${RPC_STATUS}"
 else
     echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
 fi
@@ -165,19 +174,27 @@ TORRC
         echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
-        echo "    --restricted-rpc"
+        if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
+            echo "    --restricted-rpc"
+        fi
+        if [ -n "${MONERO_RPC_USER:-}" ] && [ -n "${MONERO_RPC_PASSWORD:-}" ]; then
+            echo "    --rpc-login=${MONERO_RPC_USER}:${MONERO_RPC_PASSWORD}"
+        fi
         echo "    --no-igd"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
         # Persist for reference across container restarts
-        cat > /home/miner/.tor/monerod_onion.txt <<EOF
-Monero Node .onion: ${HS_HOSTNAME}
-Restricted RPC:     --restricted-rpc
-No IGD:            --no-igd
-Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40
-Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
-Paste all four in Gupax → Node tab → Arguments
-EOF
+        echo "Monero Node .onion: ${HS_HOSTNAME}" > /home/miner/.tor/monerod_onion.txt
+        if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
+            echo "Restricted RPC:     --restricted-rpc" >> /home/miner/.tor/monerod_onion.txt
+        fi
+        if [ -n "${MONERO_RPC_USER:-}" ] && [ -n "${MONERO_RPC_PASSWORD:-}" ]; then
+            echo "RPC Login:          --rpc-login=${MONERO_RPC_USER}:${MONERO_RPC_PASSWORD}" >> /home/miner/.tor/monerod_onion.txt
+        fi
+        echo "No IGD:            --no-igd" >> /home/miner/.tor/monerod_onion.txt
+        echo "Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40" >> /home/miner/.tor/monerod_onion.txt
+        echo "Tx proxy:          --tx-proxy=tor,127.0.0.1:9050" >> /home/miner/.tor/monerod_onion.txt
+        echo "Paste all of the above in Gupax → Node tab → Arguments" >> /home/miner/.tor/monerod_onion.txt
     fi
 else
     TOR_PID=""
