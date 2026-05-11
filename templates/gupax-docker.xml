@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>gupax</Name>
-  <Repository>ghcr.io/w111a/gupax-docker:feat-tor-node-standalone-hard</Repository>
+  <Repository>ghcr.io/w111a/gupax-docker:feat-tor-node-standalone</Repository>
   <Registry>ghcr.io/w111a/gupax-docker</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
@@ -33,7 +33,7 @@ Set your Monero wallet address inside the Gupax GUI itself (Node tab). Mining cr
       <Mask>false</Mask>
     </Variable>
     <Variable>
-      <Name>VNC_PASSWORD</Name>
+      <Name>VNC_AUTH_TOKEN</Name>
       <Value></Value>
       <Mode></Mode>
       <Description>Password for VNC web interface access (leave empty for no authentication)</Description>

@@ -55,7 +55,6 @@ echo ""
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
     echo "  Tor:    ENABLED — tx-only mode (SOCKS5 127.0.0.1:9050)"
     echo "  Note:   P2P sync stays on clearnet. Only transactions use Tor."
-    echo "  RPC:    :${TOR_RPC_PORT:-18089} (wallet connection via hidden service)"
 else
     echo "  Tor:    disabled (set TOR_ENABLED=true to enable)"
 fi
@@ -104,6 +103,11 @@ fi
 # Display number for Xvfb
 DISPLAY_NUM=:1
 SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
+# Validate format: must be WxHxD with positive integers
+if ! echo "$SCREEN_RESOLUTION" | grep -qE '^[0-9]+x[0-9]+x[0-9]+$'; then
+    echo "[!] Invalid SCREEN_RESOLUTION '$SCREEN_RESOLUTION' — using default 1920x1080x24"
+    SCREEN_RESOLUTION="1920x1080x24"
+fi
 
 # ── Tor daemon (optional) ──────────────────────────────────────────────────
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
@@ -122,9 +126,6 @@ PidFile /home/miner/.tor/tor.pid
 HiddenServiceDir /home/miner/.tor/hs_monerod
 HiddenServicePort 18084 127.0.0.1:18086
 TORRC
-
-    # Append wallet RPC hidden service port (env-var-configurable, default 18089)
-    echo "HiddenServicePort ${TOR_RPC_PORT:-18089} 127.0.0.1:18081" >> /home/miner/.tor/torrc
     chmod 600 /home/miner/.tor/torrc
 
     /usr/sbin/tor --torrc-file /home/miner/.tor/torrc &
@@ -168,9 +169,6 @@ TORRC
         echo "    --no-igd"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
-        echo ""
-        echo "[+] Wallet connection (Monero wallet / monero-wallet-cli / monero-wallet-rpc):"
-        echo "    ${HS_KEY}:${TOR_RPC_PORT:-18089}"
         # Persist for reference across container restarts
         cat > /home/miner/.tor/monerod_onion.txt <<EOF
 Monero Node .onion: ${HS_HOSTNAME}
@@ -179,9 +177,6 @@ No IGD:            --no-igd
 Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40
 Tx proxy:          --tx-proxy=tor,127.0.0.1:9050
 Paste all four in Gupax → Node tab → Arguments
-
-Wallet connection (Monero wallet / CLI):
-  ${HS_HOSTNAME}:${TOR_RPC_PORT:-18089}
 EOF
     fi
 else
@@ -235,14 +230,14 @@ echo "[*] Starting x11vnc on port 5900..."
 # VNC authentication — use VNC_PASSWORD if set, otherwise disable auth.
 # Uses -passwdfile instead of -passwd to avoid exposing the password in
 # /proc/PID/cmdline and to handle passwords with spaces or special characters.
-if [ -n "$VNC_PASSWORD" ]; then
+if [ -n "$VNC_AUTH_TOKEN" ]; then
     X11VNC_PASSFILE=$(mktemp)
-    printf '%s' "$VNC_PASSWORD" > "$X11VNC_PASSFILE"
-    echo "[*] VNC authentication: enabled (VNC_PASSWORD is set)"
+    printf '%s' "$VNC_AUTH_TOKEN" > "$X11VNC_PASSFILE"
+    echo "[*] VNC authentication: enabled (VNC_AUTH_TOKEN is set)"
     x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
         -passwdfile "$X11VNC_PASSFILE" -noxfixes -cursor arrow &
 else
-    echo "[*] VNC authentication: DISABLED (set VNC_PASSWORD to enable)"
+    echo "[*] VNC authentication: DISABLED (set VNC_AUTH_TOKEN to enable)"
     x11vnc -display $DISPLAY_NUM -forever -shared -rfbport 5900 \
         -nopw -noxfixes -cursor arrow &
 fi
