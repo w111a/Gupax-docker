@@ -109,6 +109,8 @@ You'll see output like:
 
 **3. Go to the Node tab** and switch from **Simple** to **Advanced** mode to reveal the **"Start options:"** text box
 
+> **Note:** If you don't see the **Node** tab, open **Settings** → **Tabs**, check **Node**, and click **Save**.
+
 **4. ⚠️ Fix the `--data-dir` path first.** Gupax's default is the relative path `.bitmonero`, which does not resolve correctly in this Docker setup. In the Start options box, locate `--data-dir` and change it to the absolute path:
 
 ```
@@ -211,11 +213,11 @@ Once the container is running:
 
 Inside the Gupax GUI:
 
-1. Go to the **Node tab** (or **Settings tab** depending on your Gupax version)
-2. Enter your Monero wallet address in the **Wallet Address** field
+1. If you do not see a **Node** tab, go to **Settings** → **Tabs** and check **Node** → **Save**
+2. Go to the **Node** tab and enter your Monero wallet address in the **Wallet Address** field
 3. Save the settings
 
-> **Note:** The wallet address is set inside the Gupax GUI itself — it is **not** a Docker environment variable or template field.
+> **Note:** Gupax v2.0.0+ hides the Node tab by default. You must enable it manually. The wallet address is set inside the Gupax GUI itself — it is **not** a Docker environment variable or template field.
 
 ### Ports on Unraid
 
@@ -392,6 +394,30 @@ Check the logs:
 ```bash
 docker compose logs
 ```
+
+### P2Pool spamming `empty response` / `EBADF` errors
+
+**Symptoms:** Log fills with:
+```
+JSONRPCRequest uv_poll_start returned error EBADF
+P2Pool get_info RPC request to host 127.0.0.1:RPC 18081:ZMQ 18083 failed: Error (empty response)
+```
+
+**Root cause:** Gupax v2.0.0+ hides the **Node** tab by default. If the Node was never enabled, **monerod is not running** — but P2Pool (and possibly XMRig/xmrig-proxy) still tries to connect to `127.0.0.1:18081`, producing endless RPC failures.
+
+**Fix:**
+
+1. In the Gupax GUI → **Settings** → **Tabs** → check **Node** → **Save**
+2. Go to the **Node** tab → ensure **Node Type** is `Local` and **Port** is `18081`
+3. In **Arguments**, add:
+   ```bash
+   --zmq-pub tcp://127.0.0.1:18083
+   ```
+   (If you use Tor, also append the Tor args from the container startup banner.)
+4. Click **Save**, then **Start**
+5. Wait for the Node status to go green (30–120s), then verify P2Pool stops erroring
+
+**Note for auto-start users:** If you previously had Node set to auto-start but the tab was hidden after a config reset or Gupax upgrade, the auto-start setting may also be reset. You must re-enable both the tab visibility AND the auto-start toggle on the Node tab.
 
 ---
 
