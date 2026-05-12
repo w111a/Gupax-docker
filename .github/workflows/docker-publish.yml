@@ -48,6 +48,7 @@ jobs:
             TAGS="${{ env.IMAGE_NAME }}:${SAFE_REF}"$'\n'"${{ env.IMAGE_NAME }}:${SAFE_REF}-${{ github.sha }}"
           fi
           echo "Tags: $TAGS"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAGS<<EOF"$'\n'"$TAGS"$'\n'"EOF" >> $GITHUB_ENV
 
       - name: Build and push Docker image
@@ -58,5 +59,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: ${{ env.TAGS }}
+          build-args: |
+            GUPAX_VERSION=${{ env.VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

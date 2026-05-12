@@ -87,25 +87,32 @@ RUN printf '#!/bin/sh\nexec sudo "$@"\n' > /usr/local/bin/pkexec \
 
 WORKDIR /tmp/install
 
-# --- Gupax v2.0.1 (standalone tarball — no bundled binaries) ---
-# SHA256: 67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5
-RUN echo "67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5  gupax.tar.gz" > gupax.sha256 \
-    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/v2.0.1/gupax-v2.0.1-linux-x64.tar.gz" -o gupax.tar.gz \
-    && sha256sum --check gupax.sha256 \
-    && tar -xzf gupax.tar.gz \
+# Build argument: Gupax version to install (default: v2.0.1).
+# Override at build time: --build-arg GUPAX_VERSION=v2.0.2
+# For reproducibility, the SHA256 is fetched from upstream SHA256SUMS
+# at build time — the image build fails if verification fails.
+ARG GUPAX_VERSION=v2.0.1
+RUN VERSION_NO_V="${GUPAX_VERSION#v}" \
+    && TARBALL="gupax-${GUPAX_VERSION}-linux-x64.tar.gz" \
+    && echo "[*] Downloading Gupax ${GUPAX_VERSION}..." \
+    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/${TARBALL}" -o "${TARBALL}" \
+    && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/SHA256SUMS" -o SHA256SUMS \
+    && grep "${TARBALL}" SHA256SUMS | awk '{print $1 "  " $2}' > "${TARBALL}.sha256" \
+    && sha256sum --check "${TARBALL}.sha256" \
+    && tar -xzf "${TARBALL}" \
     && mkdir -p /usr/local/bin/gupax \
-    && mv gupax-v2.0.1-linux-x64/gupax /usr/local/bin/gupax/gupax \
+    && mv "gupax-${GUPAX_VERSION}-linux-x64/gupax" /usr/local/bin/gupax/gupax \
     && chmod +x /usr/local/bin/gupax/gupax \
     && ln -s /usr/local/bin/gupax/gupax /usr/local/bin/gupax-bin \
-    && rm -rf gupax.tar.gz gupax.sha256 gupax-v2.0.1-linux-x64 /tmp/install
+    && rm -rf "${TARBALL}" "${TARBALL}.sha256" SHA256SUMS "gupax-${GUPAX_VERSION}-linux-x64" /tmp/install
 
 # Labels
 LABEL maintainer="w111a" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, standalone binaries + optional Tor)" \
       org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
       org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
-      org.opencontainers.image.version="v2.0.1-standalone-tor" \
-      gupax.version="v2.0.1"
+      org.opencontainers.image.version="${GUPAX_VERSION}-standalone-tor" \
+      gupax.version="${GUPAX_VERSION}"
 
 
 # Create index.html redirect at build time (avoids any runtime permission issues)
