@@ -79,6 +79,15 @@
       <Required>false</Required>
       <Mask>false</Mask>
     </Variable>
+    <Variable>
+      <Name>MONERO_RPC_RESTRICTED</Name>
+      <Value>true</Value>
+      <Mode></Mode>
+      <Description>Restrict RPC to safe, view-only commands (default: true). Set to false only if you need full RPC access for external wallets.</Description>
+      <Display>advanced</Display>
+      <Required>false</Required>
+      <Mask>false</Mask>
+    </Variable>
   </Environment>
 
   <!-- ============================================================ -->

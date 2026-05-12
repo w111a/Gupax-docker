@@ -12,6 +12,7 @@ services:
       # - PUID=99              # UID for Gupax (auto-detected from volume owner if unset)
       # - PGID=100             # GID for Gupax (auto-detected from volume owner if unset)
       # - VNC_AUTH_TOKEN=change-me  # Uncomment to require VNC password
+      # - MONERO_RPC_RESTRICTED=true  # Restrict RPC to view-only (default: true)
     volumes:
       - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
       - gupax-state:/home/miner/.local/state/gupax      # Gupax XDG state (session cache)
