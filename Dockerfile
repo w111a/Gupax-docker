@@ -20,8 +20,23 @@ ENV DISPLAY=:1
 # VNC password — set VNC_AUTH_TOKEN to require auth; leave empty for no auth
 ENV VNC_AUTH_TOKEN=
 
-# Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
+# Install base tools needed for adding the Tor Project apt repo
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tor: use Tor Project's official apt repo to get Tor 0.4.8.x instead of
+# Ubuntu 22.04's stale 0.4.6.10 which lacks FlowCtrl=2 and Relay=4 protocol
+# support.  Without this, Tor will eventually be rejected from the network.
+RUN curl -fsSL https://deb.torproject.org/torproject.org/pool/main/d/deb.torproject.org-keyring/deb.torproject.org-keyring_2025.08.08_all.deb \
+    -o /tmp/tor-keyring.deb \
+    && dpkg -i /tmp/tor-keyring.deb && rm /tmp/tor-keyring.deb \
+    && echo "deb [arch=$(dpkg --print-architecture)] https://deb.torproject.org/torproject.org jammy main" \
+    > /etc/apt/sources.list.d/tor.list \
+    && apt-get update
+
+# Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
+RUN apt-get install -y --no-install-recommends \
     xvfb \
     x11-xserver-utils \
     x11vnc \
