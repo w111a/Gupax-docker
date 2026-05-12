@@ -116,6 +116,9 @@ if ! echo "$SCREEN_RESOLUTION" | grep -qE '^[0-9]+x[0-9]+x[0-9]+$'; then
 fi
 
 # ── Tor daemon (optional) ──────────────────────────────────────────────────
+# Remove stale signal file from a previous run in case Tor is now disabled;
+# the Tor block below re-creates it only if Tor actually starts successfully.
+rm -f /home/miner/.tor/tor_enabled
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
     echo "[*] Tor is enabled — starting Tor daemon..."
 
