@@ -183,6 +183,11 @@ TORRC
         echo "    --no-igd"
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
+        # When RPC credentials are set, P2Pool also needs --rpc-login to connect to monerod
+        if [ -n "${MONERO_RPC_USER:-}" ] && [ -n "${MONERO_RPC_PASSWORD:-}" ]; then
+            echo "[!] P2Pool also needs RPC credentials:"
+            echo "    Paste in Gupax → P2Pool → Arguments: --rpc-login=${MONERO_RPC_USER}:${MONERO_RPC_PASSWORD}"
+        fi
         # Persist for reference across container restarts
         echo "Monero Node .onion: ${HS_HOSTNAME}" > /home/miner/.tor/monerod_onion.txt
         if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
@@ -190,6 +195,7 @@ TORRC
         fi
         if [ -n "${MONERO_RPC_USER:-}" ] && [ -n "${MONERO_RPC_PASSWORD:-}" ]; then
             echo "RPC Login:          --rpc-login=${MONERO_RPC_USER}:${MONERO_RPC_PASSWORD}" >> /home/miner/.tor/monerod_onion.txt
+            echo "P2Pool RPC Login:   --rpc-login=${MONERO_RPC_USER}:${MONERO_RPC_PASSWORD} (Gupax → P2Pool → Arguments)" >> /home/miner/.tor/monerod_onion.txt
         fi
         echo "No IGD:            --no-igd" >> /home/miner/.tor/monerod_onion.txt
         echo "Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40" >> /home/miner/.tor/monerod_onion.txt
