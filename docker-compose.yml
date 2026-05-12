@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/libre-7/gupax-docker:feat-tor-node-standalone
+    image: ghcr.io/libre-7/gupax-docker:latest
     container_name: gupax
     restart: unless-stopped
     stop_grace_period: 30s
