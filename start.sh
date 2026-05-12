@@ -194,6 +194,9 @@ TORRC
         echo "Tx proxy:          --tx-proxy=tor,127.0.0.1:9050" >> /home/miner/.tor/monerod_onion.txt
         echo "Paste all of the above in Gupax → Node tab → Arguments" >> /home/miner/.tor/monerod_onion.txt
     fi
+    # Signal file so the Docker health check knows Tor was started —
+    # healthcheck.sh verifies SOCKS proxy :9050 is still alive on each probe.
+    touch /home/miner/.tor/tor_enabled
 else
     TOR_PID=""
 fi
