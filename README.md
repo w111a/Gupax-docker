@@ -255,7 +255,7 @@ If you have an existing Monero blockchain on your Unraid server:
 | Port | Service | Description |
 |---|---|---|
 | `3333` | P2Pool | Stratum server — external miners connect here |
-| `37889` | P2Pool | Monero node ZMQ |
+| `37889` | P2Pool | P2P — p2pool peer connections (default `--p2p` port) |
 
 **Monero node (monerod)**
 
@@ -263,7 +263,7 @@ If you have an existing Monero blockchain on your Unraid server:
 |---|---|---|
 | `18080` | monerod | P2P network — connects to other Monero nodes |
 | `18081` | monerod | RPC — JSON-RPC API for Gupax |
-| `18082` | monerod | RPC ZMQ — subscription-based block updates |
+| `18083` | monerod | ZMQ pub — block notifications for P2Pool (internal, `--zmq-pub` flag) |
 
 
 ### Volumes

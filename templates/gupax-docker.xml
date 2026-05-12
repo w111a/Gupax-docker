@@ -110,7 +110,7 @@
       <HostPort>37889</HostPort>
       <ContainerPort>37889</ContainerPort>
       <Protocol>tcp</Protocol>
-      <Description>P2Pool Monero Node ZMQ</Description>
+      <Description>P2Pool P2P (p2pool peer connections)</Description>
       <Display>advanced</Display>
     </Port>
     <Port>
@@ -126,13 +126,6 @@
       <Protocol>tcp</Protocol>
       <Description>Monero RPC</Description>
       <Display>advanced</Display>
-    </Port>
-    <Port>
-      <HostPort>18082</HostPort>
-      <ContainerPort>18082</ContainerPort>
-      <Protocol>tcp</Protocol>
-      <Description>Monero RPC ZMQ</Description>
-      <Display>hidden</Display>
     </Port>
   </Ports>
 

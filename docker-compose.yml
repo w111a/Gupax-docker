@@ -26,10 +26,12 @@ services:
       # full GUI control (change wallets, start/stop mining, etc.).
       # - "5900:5900"
       - "3333:3333"   # P2Pool stratum server
-      - "37889:37889" # P2Pool Monero node ZMQ
+      - "37889:37889" # P2Pool P2P (p2pool peer connections)
       - "18080:18080" # Monero P2P
       - "18081:18081" # Monero RPC
-      - "18082:18082" # Monero RPC ZMQ
+      # monerod ZMQ pub (block notifications for P2Pool) —
+      # bound internally via --zmq-pub tcp://127.0.0.1:18083
+      # No host port needed unless you want external ZMQ access.
     # Anonymous inbound hidden service: Tor virtual 18084 → 127.0.0.1:18086
     # These are internal-only — not exposed to the host (doing so would
     # bypass Tor and defeat the purpose of anonymous-inbound).
