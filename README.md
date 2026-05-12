@@ -362,9 +362,35 @@ chown -R 99:100 /path/to/your/blockchain
 
 ## 🔐 Security Notes
 
-- The noVNC interface has **no password by default**
+- The noVNC interface has **no password by default** — set `VNC_AUTH_TOKEN` to enable authentication
 - Only expose port 6080 to trusted networks
 - For production use, consider adding authentication at the network level
+
+### Unraid FUSE Filesystems (Important)
+
+Unraid uses FUSE (fuse.shfs) for its `appdata` shares, which silently ignores
+`chown`. The container detects this at startup and applies **world-writable**
+permissions (`chmod a+rwX`) on the Gupax data volume so the container can
+write files regardless of the host user ID.
+
+**What this means:** Any process on your Unraid host — or any other
+container — can read and write files in `/mnt/user/appdata/gupax/`.
+This includes:
+
+- **Mining binaries** (P2Pool, XMRig, monerod) — could be replaced with a
+  trojaned version by a compromised container
+- **Gupax config** (wallet, node settings) — could be read or modified
+- **Tor hidden service keys** — the keys are restricted to root in the
+  container, but if you mount their parent directory from a host path on
+  a FUSE share, the same world-writable concerns apply
+
+**Mitigations:**
+- Keep your Unraid host secure — don't run untrusted containers
+- Consider mounting `appdata` from a non-FUSE location (e.g., an SSD cache
+  pool with `btrfs` or `xfs`) if security is a concern
+- This is a fundamental Unraid limitation, not specific to Gupax-docker —
+  any Docker container on Unraid with persistent volumes faces the same
+  trade-off
 
 ---
 
