@@ -42,7 +42,6 @@ RUN apt-get install -y --no-install-recommends \
     x11vnc \
     novnc \
     websockify \
-    libgl1-mesa-glx \
     libgl1 \
     libasound2 \
     libpulse0 \
