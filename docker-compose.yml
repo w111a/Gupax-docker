@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   gupax:
     build:
@@ -10,10 +8,10 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     environment:
-      - TOR_ENABLED=false   # Set to true to enable Tor SOCKS5 + hidden service
-      # - PUID=99            # UID for Gupax (auto-detected from volume owner if unset)
-      # - PGID=100           # GID for Gupax (auto-detected from volume owner if unset)
-      # - VNC_PASSWORD=change-me  # Uncomment to require VNC password
+      - TOR_ENABLED=false      # Set to true to enable Tor SOCKS5 + hidden service
+      # - PUID=99              # UID for Gupax (auto-detected from volume owner if unset)
+      # - PGID=100             # GID for Gupax (auto-detected from volume owner if unset)
+      # - VNC_AUTH_TOKEN=change-me  # Uncomment to require VNC password
     volumes:
       - gupax-data:/home/miner/.local/share/gupax       # Config + runtime data
       - gupax-state:/home/miner/.local/state/gupax      # Gupax XDG state (session cache)
@@ -21,7 +19,7 @@ services:
       - gupax-tor:/home/miner/.tor                       # Persistent .onion address
     ports:
       - "6080:6080"   # noVNC web interface
-      # VNC server — only uncomment if you've set VNC_PASSWORD above.
+      # VNC server — only uncomment if you've set VNC_AUTH_TOKEN above.
       # Exposing raw VNC without a password gives anyone on your network
       # full GUI control (change wallets, start/stop mining, etc.).
       # - "5900:5900"
