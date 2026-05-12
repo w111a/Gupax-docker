@@ -100,9 +100,9 @@ RUN echo "67abf40f8c452f637a45644f3b80815cdc44f55e45bc3901d7f66179d65495d5  gupa
     && rm -rf gupax.tar.gz gupax.sha256 gupax-v2.0.1-linux-x64 /tmp/install
 
 # Labels
-LABEL maintainer="w111a" \
+LABEL maintainer="libre-7" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, standalone binaries + optional Tor)" \
-      org.opencontainers.image.source="https://github.com/w111a/Gupax-docker" \
+      org.opencontainers.image.source="https://github.com/libre-7/Gupax-docker" \
       org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
       org.opencontainers.image.version="v2.0.1-standalone-tor" \
       gupax.version="v2.0.1"
