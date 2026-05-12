@@ -116,6 +116,9 @@ if ! echo "$SCREEN_RESOLUTION" | grep -qE '^[0-9]+x[0-9]+x[0-9]+$'; then
 fi
 
 # ── Tor daemon (optional) ──────────────────────────────────────────────────
+# Remove stale signal file from a previous run in case Tor is now disabled;
+# the Tor block below re-creates it only if Tor actually starts successfully.
+rm -f /home/miner/.tor/tor_enabled
 if [ "${TOR_ENABLED:-false}" = "true" ]; then
     echo "[*] Tor is enabled — starting Tor daemon..."
 
@@ -194,6 +197,9 @@ TORRC
         echo "Tx proxy:          --tx-proxy=tor,127.0.0.1:9050" >> /home/miner/.tor/monerod_onion.txt
         echo "Paste all of the above in Gupax → Node tab → Arguments" >> /home/miner/.tor/monerod_onion.txt
     fi
+    # Signal file so the Docker health check knows Tor was started —
+    # healthcheck.sh verifies SOCKS proxy :9050 is still alive on each probe.
+    touch /home/miner/.tor/tor_enabled
 else
     TOR_PID=""
 fi

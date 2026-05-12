@@ -118,9 +118,10 @@ LABEL maintainer="libre-7" \
 # Create index.html redirect at build time (avoids any runtime permission issues)
 RUN echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=vnc.html"></head><body><a href="vnc.html">Click to connect</a></body></html>' > /usr/share/novnc/index.html
 
-# Copy startup script
+# Copy startup script and healthcheck
 COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /usr/local/bin/start.sh /usr/local/bin/healthcheck.sh
 
 EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081
@@ -136,8 +137,8 @@ RUN mkdir -p /home/miner/.bitmonero && chown miner:miner /home/miner/.bitmonero
 # start.sh drops to the miner user via gosu before launching Gupax.
 WORKDIR /home/miner
 
-# Health check — verify noVNC web interface is responding
+# Health check — verifies noVNC web interface + Tor (if enabled)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:6080/')" || exit 1
+  CMD /usr/local/bin/healthcheck.sh
 
 ENTRYPOINT ["/usr/local/bin/start.sh"]
