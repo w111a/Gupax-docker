@@ -133,6 +133,18 @@ The complete Start options line should look like:
 
 **7. Click Start** to launch monerod with Tor
 
+**8. ⚠️ Fix P2Pool's ZMQ port.** Gupax has a known bug where it copies the RPC port (`18081`) into P2Pool's `--zmq-port` argument. ZMQ is a different protocol on a different port (`18083`, set by `--zmq-pub tcp://127.0.0.1:18083` on monerod). If `--zmq-port 18081` is left as-is, P2Pool won't receive real-time block notifications from monerod.
+
+Open the **P2Pool tab** → **Advanced** mode → **Arguments**, and change:
+```
+--zmq-port 18081
+```
+to:
+```
+--zmq-port 18083
+```
+Then click **Save**.
+
 ### Keeping the Same .onion Across Restarts
 
 Mount the `gupax-tor` volume (enabled by default in `docker-compose.yml`) to persist the hidden service private key at `/home/miner/.tor/hs_monerod/hs_ed25519_secret_key`. As long as that file survives, your `.onion` address stays the same across container recreations.
