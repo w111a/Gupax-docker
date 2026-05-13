@@ -127,13 +127,15 @@ if [ "${TOR_ENABLED:-false}" = "true" ]; then
     chown root:root /home/miner/.tor
     chmod 700 /home/miner/.tor
 
-    # Generate minimal torrc: SOCKS5 outbound proxy + hidden service for monerod P2P
+    # Generate minimal torrc: SOCKS5 outbound proxy + hidden service for monerod
+    # Single .onion exposes both P2P (18084) and RPC (18081) on different ports
     cat > /home/miner/.tor/torrc <<'TORRC'
 SocksPort 127.0.0.1:9050
 DataDirectory /home/miner/.tor
 PidFile /home/miner/.tor/tor.pid
 HiddenServiceDir /home/miner/.tor/hs_monerod
 HiddenServicePort 18084 127.0.0.1:18086
+HiddenServicePort 18081 127.0.0.1:18081
 TORRC
     chmod 600 /home/miner/.tor/torrc
 
@@ -171,7 +173,18 @@ TORRC
     done
 
     if [ -n "$HS_HOSTNAME" ]; then
-        echo "[+] Monero node hidden service: ${HS_HOSTNAME}"
+        echo "[+] Monero .onion: ${HS_HOSTNAME}"
+        echo "    │ Wallet RPC:   ${HS_HOSTNAME}:18081"
+        echo "    │ P2P inbound:  ${HS_HOSTNAME}:18084"
+        echo "    │"
+        echo "    │ Connect wallets over Tor:"
+        echo "    │   monero-wallet-cli --proxy 127.0.0.1:9050 \\"
+        echo "    │     --daemon-address ${HS_HOSTNAME}:18081 \\"
+        echo "    │     --trusted-daemon"
+        echo "    │"
+        echo "    │ Mobile wallets (Cake, Monerujo): add .onion as remote node."
+        echo "    │ RPC is restricted — read-only wallet operations, no admin access."
+        echo ""
         HS_KEY="${HS_HOSTNAME}"
         echo "[+] Recommended monerod arguments (Gupax → Node → Arguments):"
         if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
@@ -186,16 +199,20 @@ TORRC
         echo "    --tx-proxy=tor,127.0.0.1:9050"
         echo "    --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40"
         # Persist for reference across container restarts
-        echo "Monero Node .onion: ${HS_HOSTNAME}" > /home/miner/.tor/monerod_onion.txt
+        echo "Monero .onion: ${HS_HOSTNAME}" > /home/miner/.tor/monerod_onion.txt
+        echo "" >> /home/miner/.tor/monerod_onion.txt
+        echo "Wallet RPC — connect wallets via Tor:" >> /home/miner/.tor/monerod_onion.txt
+        echo "  ${HS_HOSTNAME}:18081" >> /home/miner/.tor/monerod_onion.txt
+        echo "" >> /home/miner/.tor/monerod_onion.txt
+        echo "Monerod arguments (Gupax → Node → Arguments):" >> /home/miner/.tor/monerod_onion.txt
         if [ "${MONERO_RPC_RESTRICTED:-true}" = "true" ]; then
-            echo "Restricted RPC:     --restricted-rpc" >> /home/miner/.tor/monerod_onion.txt
+            echo "  --restricted-rpc" >> /home/miner/.tor/monerod_onion.txt
         fi
         # --rpc-login omitted: Gupax watchdog has no auth support (HTTP 401).
         # --restricted-rpc is sufficient for loopback-only RPC access.
-        echo "No IGD:            --no-igd" >> /home/miner/.tor/monerod_onion.txt
-        echo "Anonymous inbound: --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40" >> /home/miner/.tor/monerod_onion.txt
-        echo "Tx proxy:          --tx-proxy=tor,127.0.0.1:9050" >> /home/miner/.tor/monerod_onion.txt
-        echo "Paste all of the above in Gupax → Node tab → Arguments" >> /home/miner/.tor/monerod_onion.txt
+        echo "  --no-igd" >> /home/miner/.tor/monerod_onion.txt
+        echo "  --tx-proxy=tor,127.0.0.1:9050" >> /home/miner/.tor/monerod_onion.txt
+        echo "  --anonymous-inbound=${HS_KEY}:18084,127.0.0.1:18086,40" >> /home/miner/.tor/monerod_onion.txt
     fi
     # Signal file so the Docker health check knows Tor was started —
     # healthcheck.sh verifies SOCKS proxy :9050 is still alive on each probe.
