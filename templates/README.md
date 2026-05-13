@@ -59,16 +59,18 @@ The container runs a **noVNC web interface** — no X11 or VNC client needed:
 | 6080 | noVNC | **Web interface** — connect your browser here |
 | 5900 | VNC | Direct VNC access (optional) |
 | 3333 | P2Pool | Stratum server for external miners |
-| 37889 | P2Pool | Monero node ZMQ |
+| 37889 | P2Pool | P2P — p2pool peer connections |
 | 18080 | Monerod | Monero P2P network |
 | 18081 | Monerod | Monero RPC |
 
 ## Volumes
 
-The template creates two persistent directories under `/mnt/user/appdata/gupax/`:
+The template creates four persistent directories under `/mnt/user/appdata/gupax/`:
 
 - `config/` — Gupax configuration, wallet, and state
+- `share/` — Downloaded mining binaries (P2Pool, XMRig, monerod)
 - `monero/` — Monero blockchain data
+- `tor/` — Tor hidden service keys (persists .onion address)
 
 ## Using an Existing Blockchain
 

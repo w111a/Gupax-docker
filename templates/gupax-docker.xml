@@ -7,8 +7,8 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/libre-7/Gupax-docker/issues</Support>
-  <Project>https://github.com/libre-7/Gupax-docker</Project>
+  <Support>https://github.com/libre-7/gupax-docker/issues</Support>
+  <Project>https://github.com/libre-7/gupax-docker</Project>
   <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.</Overview>
   <Description>
     Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via a noVNC web interface.
@@ -25,7 +25,7 @@
   </Description>
   <Category>Crypto:Tools</Category>
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/libre-7/Gupax-docker/main/templates/gupax-docker.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png</Icon>
   <ExtraParams></ExtraParams>
   <PostArgs></PostArgs>
