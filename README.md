@@ -78,9 +78,26 @@ Click **Connect** on the noVNC page — no password required by default.
 
 ## 🧅 Tor (Optional)
 
-When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node's transaction-relay port as a `.onion` address. The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; only wallet-originated transactions are routed through Tor hidden services. This keeps bandwidth through Tor negligible while still protecting transaction privacy. For the full rationale, see [issue #27](https://github.com/libre-7/Gupax-docker/issues/27).
+When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node as a `.onion` address:
 
-> **Note:** Currently you must manually configure monerod to use Tor. The goal is to make this automatic in a future release — see [#12](https://github.com/libre-7/Gupax-docker/issues/12) for tracking.
+| Port | Service |
+|------|---------|
+| `<onion>:18081` | Wallet RPC — connect wallets over Tor (restricted, read-only) |
+| `<onion>:18084` | P2P inbound — other Tor peers relay transactions here |
+
+The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; only wallet-originated transactions are routed through Tor. This keeps bandwidth through Tor negligible (~2 KB per transaction) while still protecting transaction privacy.
+
+### Why not sync blocks over Tor?
+
+**Bandwidth — the ethical concern.** A synced Monero node pushes hundreds of GB to multiple TB per month through its P2P connections. The Tor network consists of ~7,000 volunteer-run relays provisioned for web browsing and messaging — low-bandwidth, bursty traffic. Monero P2P is the opposite: sustained, high-throughput, always-on. Pushing full node sync through Tor degrades the network for everyone else, analogous to torrenting over Tor.
+
+**Monero's own design acknowledges this.** From official docs:
+> *Monerod does not support synchronizing the blockchain over onion or I2P hidden services.*
+> *anonymous-inbound is not for blockchain sync!*
+
+**What `--tx-proxy` gives you instead.** Only wallet-originated transactions (~2 KB) route through Tor. Your ISP sees you running a Monero node on clearnet, but individual transaction origins are hidden behind Tor circuits. Combined with `--anonymous-inbound`, transactions enter and leave your node through Tor while bulk sync stays efficient on clearnet.
+
+> **Note:** If you need full-P2P-over-Tor (e.g., ISP blocks Monero traffic entirely), you can add `--proxy 127.0.0.1:9050` manually in Gupax's Node → Arguments. This works but will consume significant Tor network bandwidth — please reduce rate limits with `--limit-rate-up` and `--limit-rate-down` if you do this.
 
 ### Step-by-Step: Configuring monerod to Use Tor
 
