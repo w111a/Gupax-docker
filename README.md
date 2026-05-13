@@ -63,7 +63,8 @@ docker run -d \
   -p 37889:37889 \
   -p 18080:18080 \
   -p 18081:18081 \
-  -v gupax-config:/home/miner/.local/state/gupax \
+  -v gupax-data:/home/miner/.local/share/gupax \
+  -v gupax-state:/home/miner/.local/state/gupax \
   -v gupax-monero:/home/miner/.bitmonero \
   libre7/gupax-docker:latest
 
@@ -104,21 +105,29 @@ The container uses **tx-only mode** — P2P blockchain sync stays on clearnet; o
 **1. Find your `.onion` address in the container logs**
 
 ```bash
-docker logs gupaxtornode2 2>&1 | grep -A5 "Monero node hidden service"
+docker logs gupax 2>&1 | grep -A5 "Monero .onion"
 ```
 
 You'll see output like:
 
 ```
-[+] Monero node hidden service: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
+[+] Monero .onion: dqwj5fyc4xfjnlswv2b4xjayxo2enr5sjgwjlimlvgeejkudo6msmqqd.onion
+    │ Wallet RPC:   dqwj5fyc...onion:18081
+    │ P2P inbound:  dqwj5fyc...onion:18084
+    │
+    │ Connect wallets over Tor:
+    │   monero-wallet-cli --proxy 127.0.0.1:9050 \
+    │     --daemon-address dqwj5fyc...onion:18081 \
+    │     --trusted-daemon
+    │
+    │ Mobile wallets (Cake, Monerujo): add .onion as remote node.
+    │ RPC is restricted — read-only wallet operations, no admin access.
+
 [+] Recommended monerod arguments (Gupax → Node → Arguments):
     --restricted-rpc
     --no-igd
     --tx-proxy=tor,127.0.0.1:9050
     --anonymous-inbound=dqwj5fyc...onion:18084,127.0.0.1:18086,40
-
-[+] Wallet connection (Monero wallet / monero-wallet-cli / monero-wallet-rpc):
-    dqwj5fyc...onion:18089
 ```
 
 **2. Open the Gupax web UI** at `http://your-server:6080`
@@ -169,19 +178,19 @@ Mount the `gupax-tor` volume (enabled by default in `docker-compose.yml`) to per
 
 ### Connecting a Wallet via Tor
 
-Once monerod is running, you can connect any Monero wallet through the same `.onion` address over the wallet RPC port (default `18089`, configurable via `TOR_RPC_PORT`).
+Once monerod is running, you can connect any Monero wallet through the same `.onion` address over the wallet RPC port (`18081`).
 
 **With a Monero wallet:**
 1. Go to wallet settings / nodes
-2. Add a remote node: `<onion>:18089` (e.g. `dqwj5fyc...onion:18089`)
+2. Add a remote node: `<onion>:18081` (e.g. `dqwj5fyc...onion:18081`)
 3. The wallet syncs and submits transactions entirely through Tor
 
 **With `monero-wallet-cli`:**
 ```bash
-monero-wallet-cli --daemon-address <onion>:18089 --proxy 127.0.0.1:9050
+monero-wallet-cli --daemon-address <onion>:18081 --proxy 127.0.0.1:9050
 ```
 
-> **How it works:** The hidden service forwards `:18089` (or your custom `TOR_RPC_PORT`) → monerod's JSON-RPC at `127.0.0.1:18081`. Wallet sync (`get_blocks.bin`) and transaction submission (`send_raw_transaction`) both flow through this port. Transaction broadcast from monerod to the network uses `--tx-proxy=tor,...` to route through SOCKS5.
+> **How it works:** The hidden service maps `:18081` directly to monerod's JSON-RPC at `127.0.0.1:18081`. Wallet sync (`get_blocks.bin`) and transaction submission (`send_raw_transaction`) both flow through this port. Transaction broadcast from monerod to the network uses `--tx-proxy=tor,...` to route through SOCKS5.
 
 ---
 ## 🖥️ Unraid Setup
@@ -300,8 +309,10 @@ If you have an existing Monero blockchain on your Unraid server:
 
 | Volume | Path | Description |
 |---|---|---|
-| `gupax-config` | `/home/miner/.local/state/gupax` | Gupax configuration and state |
+| `gupax-data` | `/home/miner/.local/share/gupax` | Downloaded Gupax binaries (P2Pool, XMRig, monerod) |
+| `gupax-state` | `/home/miner/.local/state/gupax` | Gupax configuration and session state |
 | `gupax-monero` (or host path) | `/home/miner/.bitmonero` | Monero blockchain data |
+| `gupax-tor` | `/home/miner/.tor` | Persistent `.onion` address and Tor data |
 
 ### Using an Existing Blockchain
 
@@ -364,7 +375,7 @@ chown -R 99:100 /path/to/your/blockchain
 >
 > Verify from inside the container after changing ownership:
 > ```bash
-> docker exec gupaxtornode2 stat /home/miner/.bitmonero/lmdb/data.mdb | grep Uid
+> docker exec gupax stat /home/miner/.bitmonero/lmdb/data.mdb | grep Uid
 > # Should show: Uid: (99/nobody) — not 999/miner
 > ```
 
