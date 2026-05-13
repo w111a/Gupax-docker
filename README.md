@@ -63,7 +63,6 @@ docker run -d \
   -p 37889:37889 \
   -p 18080:18080 \
   -p 18081:18081 \
-  -p 18082:18082 \
   -v gupax-config:/home/miner/.local/state/gupax \
   -v gupax-monero:/home/miner/.bitmonero \
   libre7/gupax-docker:latest
@@ -228,7 +227,7 @@ The following ports are exposed by default. You do not need to open all of them 
 | `6080` | noVNC Web UI | **Everyone** — access Gupax in your browser |
 | `5900` | VNC | Optional — direct VNC clients |
 | `3333` | P2Pool Stratum | External miners connecting to your P2Pool |
-| `37889` | P2Pool ZMQ | External miners; leave at default |
+| `37889` | P2Pool P2P | p2pool peer connections |
 | `18080` | Monero P2P | Only if running a full Monero node (optional) |
 | `18081` | Monero RPC | Only if running a full Monero node (optional) |
 
