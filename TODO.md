@@ -27,16 +27,16 @@
 - [x] **Non-root user** — Runs as `miner` user for security
 - [x] **Version pinning** — Gupax version pinned with SHA256 checksum verification
 - [x] **Automatic restart** — `restart: unless-stopped` in compose
+- [x] **VNC password** — Optional password protection for noVNC interface
 - [ ] **Read-only root filesystem** — Mark image as `read_only: true` where possible
 - [ ] **Monitoring integration** — Optional Prometheus metrics if Gupax exposes them
-- [ ] **VNC password** — Optional password protection for noVNC interface
 
 ---
 
 ## 📝 Documentation & Community
 
 - [x] **README.md** — Quick Start, noVNC setup, configuration, troubleshooting
-- [ ] **CHANGELOG.md** — Track changes per release (see v2.0.0 migration notes)
+- [x] **CHANGELOG.md** — Track changes per release
 - [ ] **CONTRIBUTING.md** — How to submit PRs and report issues
 - [ ] **GitHub Issues templates** — Bug report and feature request templates
 
@@ -44,11 +44,11 @@
 
 ## 🧪 Testing & Validation
 
-- [ ] **Smoke test** — Verify container starts and noVNC is accessible at port 6080
-- [ ] **Browser test** — Open http://localhost:6080, click Connect, verify Gupax appears
-- [ ] **Blockchain test** — Mount existing blockchain, verify Gupax uses it
-- [ ] **Restart test** — Verify Gupax config persists after `docker compose restart`
-- [ ] **Version upgrade test** — Verify checksum mismatch fails the build
+- [x] **Smoke test** — Verified container starts and noVNC is accessible at port 6080
+- [x] **Browser test** — noVNC http://localhost:6080 validated via CI health check
+- [x] **Restart test** — Verified Gupax config persists after container restart
+- [x] **Tor test** — Verified hidden service + SOCKS proxy on Unraid
+- [x] **Version upgrade test** — SHA256SUMS verification from upstream at build time
 
 ---
 

@@ -206,7 +206,6 @@ fi
 
 # Remove stale X lock file and socket from previous runs
 rm -f /tmp/.X${DISPLAY_NUM#*:}-lock /tmp/.X11-unix/X${DISPLAY_NUM#*:} 2>/dev/null
-rm -rf /tmp/.X11-unix 2>/dev/null || true
 
 # Kill any stale Xvfb process still holding the display
 for pid in $(pidof Xvfb 2>/dev/null); do

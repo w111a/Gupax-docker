@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.3.0] — 2026-05-12
+
+### Security
+
+- Health check now monitors Tor SOCKS proxy when enabled (#9)
+- Image provenance attestations + SBOM generated for GHCR and Docker Hub (#5)
+- Documented FUSE world-writable permission trade-off on Unraid (#8)
+
+### Fixed
+
+- VNC_PASSWORD → VNC_AUTH_TOKEN env var mismatch in compose/template (#1)
+- Dockerfile labels updated from deprecated w111a → libre-7 namespace (#2)
+- Removed deprecated version: "3.8" from docker-compose.yml (#3)
+- Docker Hub builds now pass correct GUPAX_VERSION as build-arg (#7)
+- Removed deprecated transitional libgl1-mesa-glx package (#11)
+- Replaced racy rm -rf /tmp/.X11-unix with targeted file removal (#10)
+
+### Added
+
+- MONERO_RPC_RESTRICTED surfaced in compose, Unraid template, and .env.example (#6)
+- Dependabot configured for GitHub Actions version updates (#14)
+
+---
+
 ## [2.2.0] — 2026-04-18
 
 ### Added
