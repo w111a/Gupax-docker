@@ -27,6 +27,9 @@
   <WebUI>http://[IP]:[PORT:6080]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png</Icon>
+  <Screenshot>https://raw.githubusercontent.com/libre-7/gupax-docker/main/icons/screenshot.jpg</Screenshot>
+  <ExtraSearchTerms>monero xmr p2pool xmrig mining cryptocurrency noVNC</ExtraSearchTerms>
+  <ReadMe>https://raw.githubusercontent.com/libre-7/gupax-docker/main/README.md</ReadMe>
   <ExtraParams></ExtraParams>
   <PostArgs></PostArgs>
 
