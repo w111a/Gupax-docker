@@ -18,26 +18,20 @@ Once this template is merged into the [Unraid Docker Template Repository](https:
 4. Set SCREEN_RESOLUTION if needed (default: 1920x1080x24)
 5. Click **Apply** and start mining!
 
-### Option 2: Manual Installation via Template URL
+### Option 2: Manual Installation
 
-1. Go to **Docker** tab in Unraid
-2. Click **Add Container**
-3. Set **Template URL** to:
-   ```
-   https://raw.githubusercontent.com/libre-7/Gupax-docker/main/templates/gupax-docker.xml
-   ```
-4. Fill in fields as needed — no WALLET_ADDRESS required (set it in the Gupax GUI)
-5. Click **Apply**
+If the template is not yet in the Community Applications store, you can install it manually by placing the XML on your Unraid USB flash drive:
 
-### Option 3: Add Repository to Community Applications
-
-1. Go to **Apps** tab → **Settings** (gear icon)
-2. In **Template repositories**, add:
+1. Download the template onto the flash drive:
+   ```bash
+   # From Unraid terminal:
+   wget -O /boot/config/plugins/dockerMan/templates-user/my-gupax-docker.xml \
+     https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml
    ```
-   https://github.com/libre-7/Gupax-docker
-   ```
-3. Refresh the Apps page
-4. Search for **"gupax"** and install
+2. Go to the **Docker** tab in your Unraid web UI
+3. Click **Add Container**
+4. Select **"my-gupax-docker"** from the **Template** dropdown
+5. Review settings (adjust SCREEN_RESOLUTION if needed) and click **Apply**
 
 ## Configuration
 

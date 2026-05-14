@@ -210,18 +210,21 @@ This section covers installing and running Gupax-docker on Unraid.
 4. Set **SCREEN_RESOLUTION** if needed (default: `1920x1080x24`)
 5. Click **Apply** and wait for the container to start
 
-### Installing via Template URL
+### Manual Install (if not yet in Community Applications)
 
-If Gupax-docker is not yet in the Community Applications store:
+If Gupax-docker is not yet in the Community Applications store, you can install it manually by dropping the template XML onto your Unraid USB flash drive.
 
-1. Go to the **Docker** tab in your Unraid web UI
-2. Click **Add Container**
-3. Set the **Template URL** to:
+1. Download the template and place it on the flash drive:
+   ```bash
+   # From Unraid terminal, or mount the flash drive on another machine and copy it:
+   wget -O /boot/config/plugins/dockerMan/templates-user/my-gupax-docker.xml \
+     https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml
    ```
-   https://raw.githubusercontent.com/libre-7/gupax-docker/main/templates/gupax-docker.xml
-   ```
-4. Fill in the required fields — only **SCREEN_RESOLUTION** is configurable
-5. Click **Apply**
+2. Go to the **Docker** tab in your Unraid web UI
+3. Click **Add Container**
+4. Select **"my-gupax-docker"** from the **Template** dropdown
+5. Review the settings — adjust **SCREEN_RESOLUTION** if needed (default: `1920x1080x24`)
+6. Click **Apply**
 
 ### Accessing the GUI
 
