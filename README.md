@@ -501,6 +501,6 @@ P2Pool get_info RPC request to host 127.0.0.1:RPC 18081:ZMQ 18083 failed: Error 
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 Gupax, P2Pool, and XMRig are each licensed under their respective licenses — see the official repositories linked above.
