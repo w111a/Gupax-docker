@@ -251,7 +251,7 @@ The following ports are exposed by default. You do not need to open all of them 
 | Port | Service | Who needs it |
 |---|---|---|
 | `6080` | noVNC Web UI | **Everyone** — access Gupax in your browser |
-| `5900` | VNC | Optional — direct VNC clients |
+| `5900` | VNC | Optional — direct VNC clients (disabled by default; requires `VNC_AUTH_TOKEN`) |
 | `3333` | P2Pool Stratum | External miners connecting to your P2Pool |
 | `37889` | P2Pool P2P | p2pool peer connections |
 | `18080` | Monero P2P | Only if running a full Monero node (optional) |
@@ -276,7 +276,13 @@ If you have an existing Monero blockchain on your Unraid server:
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `MONERO_DATA_PATH` | No | gupax-monero | Path to Monero blockchain data |
+| `TOR_ENABLED` | No | `false` | Enable Tor daemon with SOCKS5 proxy + hidden service for monerod |
+| `VNC_AUTH_TOKEN` | No | *(none)* | Set to require a password on the noVNC/VNC interface |
+| `PUID` | No | *(auto)* | UID to run Gupax as — auto-detected from `gupax-data` volume owner |
+| `PGID` | No | *(auto)* | GID to run Gupax as — auto-detected from `gupax-data` volume owner |
+| `MONERO_RPC_RESTRICTED` | No | `true` | Restrict monerod RPC to view-only commands |
+| `MONERO_DATA_PATH` | No | `gupax-monero` | Path (volume name or host path) for Monero blockchain data |
+| `SCREEN_RESOLUTION` | No | `1920x1080x24` | Resolution for the virtual X display (WxHxD format) |
 
 > **Note:** `GUPAX_VERSION` and `GUPAX_SHA256` are managed automatically by the CI workflow — no manual configuration needed. The Docker image is always built with the latest detected upstream Gupax version.
 
@@ -287,7 +293,7 @@ If you have an existing Monero blockchain on your Unraid server:
 | Port | Service | Description |
 |---|---|---|
 | `6080` | noVNC | **Web UI** — open in your browser to use Gupax |
-| `5900` | VNC | Direct VNC client access (optional) |
+| `5900` | VNC | Direct VNC client access (disabled by default; requires `VNC_AUTH_TOKEN`) |
 
 **P2Pool (mining stratum)**
 
