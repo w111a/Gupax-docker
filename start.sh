@@ -3,6 +3,8 @@
 # Gupax-docker Startup Script
 # Starts Xvfb → openbox → x11vnc → websockify → Gupax
 # Optional Tor daemon for monerod-over-Tor (TOR_ENABLED=true)
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2024-2026  libre-7
 # =============================================================================
 
 set -e

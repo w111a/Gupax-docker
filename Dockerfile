@@ -111,6 +111,7 @@ LABEL maintainer="libre-7" \
       org.opencontainers.image.source="https://github.com/libre-7/Gupax-docker" \
       org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
       org.opencontainers.image.version="${GUPAX_VERSION}-standalone-tor" \
+      org.opencontainers.image.licenses="GPL-3.0" \
       gupax.version="${GUPAX_VERSION}"
 
 

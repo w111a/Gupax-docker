@@ -3,6 +3,8 @@
 # Gupax-docker Health Check
 # Verifies noVNC is reachable and Tor (if enabled) is healthy.
 # Called by Docker HEALTHCHECK every 30s.
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2024-2026  libre-7
 # =============================================================================
 
 # NoVNC — always required
