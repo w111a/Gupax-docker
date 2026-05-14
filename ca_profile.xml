@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Maintainer>
-  <Icon>https://raw.githubusercontent.com/libre-7/Gupax-docker/main/icons/gupax.png</Icon>
+  <Icon>https://raw.githubusercontent.com/libre-7/gupax-docker/main/icons/gupax.png</Icon>
   <Profile>
     Docker packaging for Gupax — the GUI that unites P2Pool and XMRig for easy, decentralized Monero mining. Self-contained with noVNC for browser access. Also supports Tor hidden services for private transaction relay.
   </Profile>
-  <WebPage>https://github.com/libre-7/Gupax-docker</WebPage>
+  <WebPage>https://github.com/libre-7/gupax-docker</WebPage>
   <DonateLink></DonateLink>
   <DonateText></DonateText>
 </Maintainer>

@@ -198,4 +198,13 @@
   <LogMaxSize>10M</LogMaxSize>
   <LogMaxFile>3</LogMaxFile>
 
+  <Changes>
+### 2026.05.14
+- Initial CA release.
+- Tor tx-only mode for private transaction relay.
+- noVNC web interface on port 6080.
+- VNC_AUTH_TOKEN for optional web authentication.
+- P2Pool + XMRig via Gupax v2.0.1 GUI.
+  </Changes>
+
 </Container>
