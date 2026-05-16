@@ -49,13 +49,17 @@ The container runs a **noVNC web interface** — no X11 or VNC client needed:
 
 ## Ports
 
-| Port | Service | Description |
-| 6080 | noVNC | **Web interface** — connect your browser here |
-| 5900 | VNC | Direct VNC access (optional) |
-| 3333 | P2Pool | Stratum server for external miners |
-| 37889 | P2Pool | P2P — p2pool peer connections |
-| 18080 | Monerod | Monero P2P network |
-| 18081 | Monerod | Monero RPC |
+| Port | Service | Category | Map | Description |
+|---|---|---|---|---|
+| `6080` | noVNC | Access | ✅ **Yes** | Web UI — open in your browser |
+| `5900` | VNC | Access | ⚠️ **Optional** | Direct VNC (only needed if `VNC_AUTH_TOKEN` is set) |
+| `3333` | P2Pool | Mining | ✅ **Yes** | Stratum — external miners connect here |
+| `37889` | P2Pool | Mining | ✅ **Yes** | P2P — p2pool peer connections |
+| `18080` | monerod | Node | ✅ **Yes** | P2P network — connects to other Monero nodes |
+| `18081` | monerod | Node | ✅ **Yes** | RPC — JSON-RPC API for Gupax and wallets |
+| `18083` | monerod | Node | — | ZMQ pub — block notifications for P2Pool (loopback only, `--zmq-pub` flag) |
+| `18084` | Tor HS | Tor | — | Hidden service virtual port (Tor routes this internally) |
+| `18086` | monerod | Tor | — | `--anonymous-inbound` bind target (Tor routes this internally) |
 
 ## Volumes
 

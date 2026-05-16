@@ -108,7 +108,7 @@
       <HostPort>5900</HostPort>
       <ContainerPort>5900</ContainerPort>
       <Protocol>tcp</Protocol>
-      <Description>VNC server (optional - for direct VNC clients)</Description>
+      <Description>VNC server — disabled by default. Only enable if VNC_AUTH_TOKEN is set (exposing unprotected VNC gives full GUI control)</Description>
       <Display>advanced</Display>
     </Port>
     <Port>

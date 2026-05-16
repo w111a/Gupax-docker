@@ -81,6 +81,8 @@ Click **Connect** on the noVNC page — no password required by default.
 
 When `TOR_ENABLED=true`, the container starts a Tor daemon with a **SOCKS5 proxy** on `127.0.0.1:9050` and a **hidden service** that exposes your Monero node as a `.onion` address:
 
+See the [Ports table](#ports) in Configuration for all Tor-related ports (`18081`, `18084`, `18086`). In short:
+
 | Port | Service |
 |------|---------|
 | `<onion>:18081` | Wallet RPC — connect wallets over Tor (restricted, read-only) |
@@ -249,16 +251,7 @@ Inside the Gupax GUI:
 
 ### Ports on Unraid
 
-The following ports are exposed by default. You do not need to open all of them — only the ones you use:
-
-| Port | Service | Who needs it |
-|---|---|---|
-| `6080` | noVNC Web UI | **Everyone** — access Gupax in your browser |
-| `5900` | VNC | Optional — direct VNC clients (disabled by default; requires `VNC_AUTH_TOKEN`) |
-| `3333` | P2Pool Stratum | External miners connecting to your P2Pool |
-| `37889` | P2Pool P2P | p2pool peer connections |
-| `18080` | Monero P2P | Only if running a full Monero node (optional) |
-| `18081` | Monero RPC | Only if running a full Monero node (optional) |
+See the [Ports table](#ports) in Configuration for a complete list. The Unraid template maps `6080`, `3333`, `37889`, `18080`, and `18081` by default. Port `5900` (VNC) is available but disabled by default — only enable it if you have set `VNC_AUTH_TOKEN`.
 
 ### Using Your Own Blockchain on Unraid
 
@@ -291,27 +284,17 @@ If you have an existing Monero blockchain on your Unraid server:
 
 ### Ports
 
-**Access (user-facing)**
-
-| Port | Service | Description |
-|---|---|---|
-| `6080` | noVNC | **Web UI** — open in your browser to use Gupax |
-| `5900` | VNC | Direct VNC client access (disabled by default; requires `VNC_AUTH_TOKEN`) |
-
-**P2Pool (mining stratum)**
-
-| Port | Service | Description |
-|---|---|---|
-| `3333` | P2Pool | Stratum server — external miners connect here |
-| `37889` | P2Pool | P2P — p2pool peer connections (default `--p2p` port) |
-
-**Monero node (monerod)**
-
-| Port | Service | Description |
-|---|---|---|
-| `18080` | monerod | P2P network — connects to other Monero nodes |
-| `18081` | monerod | RPC — JSON-RPC API for Gupax |
-| `18083` | monerod | ZMQ pub — block notifications for P2Pool (internal, `--zmq-pub` flag) |
+| Port | Service | Category | Map | Description |
+|---|---|---|---|---|
+| `6080` | noVNC | Access | ✅ **Yes** | Web UI — open in your browser |
+| `5900` | VNC | Access | ⚠️ **Optional** | Direct VNC (only needed if `VNC_AUTH_TOKEN` is set) |
+| `3333` | P2Pool | Mining | ✅ **Yes** | Stratum — external miners connect here |
+| `37889` | P2Pool | Mining | ✅ **Yes** | P2P — p2pool peer connections |
+| `18080` | monerod | Node | ✅ **Yes** | P2P network — connects to other Monero nodes |
+| `18081` | monerod | Node | ✅ **Yes** | RPC — JSON-RPC API for Gupax and wallets |
+| `18083` | monerod | Node | — | ZMQ pub — block notifications for P2Pool (loopback only, `--zmq-pub` flag) |
+| `18084` | Tor HS | Tor | — | Hidden service virtual port (Tor routes this internally) |
+| `18086` | monerod | Tor | — | `--anonymous-inbound` bind target (Tor routes this internally) |
 
 
 ### Volumes
