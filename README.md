@@ -1,6 +1,7 @@
 <img src="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/banner.png" width="600">
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/libre-7/Gupax-docker/docker-publish.yml?branch=main&style=flat-square&logo=github&label=build)](https://github.com/libre-7/Gupax-docker/actions)
+[![Docker Hub Build](https://img.shields.io/github/actions/workflow/status/libre-7/Gupax-docker/docker-hub-push.yml?branch=main&style=flat-square&logo=docker&label=dockerhub)](https://github.com/libre-7/Gupax-docker/actions/workflows/docker-hub-push.yml)
 [![License](https://img.shields.io/github/license/libre-7/Gupax-docker?style=flat-square&color=blue)](https://github.com/libre-7/Gupax-docker/blob/main/LICENSE)
 [![Docker Hub](https://img.shields.io/docker/pulls/libre7/gupax-docker?style=flat-square&color=blue&logo=docker)](https://hub.docker.com/r/libre7/gupax-docker)
 [![Image Size](https://img.shields.io/docker/image-size/libre7/gupax-docker/latest?style=flat-square&logo=docker&color=blueviolet)](https://hub.docker.com/r/libre7/gupax-docker)
