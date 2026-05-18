@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/libre-7/gupax-docker/issues</Support>
   <Project>https://github.com/libre-7/gupax-docker</Project>
-  <Overview>Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via noVNC web interface.</Overview>
+  <Overview>Browser-based Monero mining — P2Pool + XMRig GUI with optional Tor</Overview>
   <Description>
     Gupax-docker runs the Gupax GUI for P2Pool + XMRig Monero mining via a noVNC web interface.
 
