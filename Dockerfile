@@ -115,7 +115,7 @@ LABEL maintainer="libre-7" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, standalone binaries + optional Tor)" \
       org.opencontainers.image.source="https://github.com/libre-7/gupax-docker" \
       org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
-      org.opencontainers.image.version="${GUPAX_VERSION}" \
+      org.opencontainers.image.version="${GUPAX_VERSION}+20260518" \
       org.opencontainers.image.licenses="GPL-3.0" \
       gupax.version="${GUPAX_VERSION}"
 

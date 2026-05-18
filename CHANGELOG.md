@@ -4,6 +4,61 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+Versions follow the scheme `v{upstream-gupax}+{build-date}`. The base version
+tracks which Gupax release is bundled; the date suffix differentiates container
+builds. `v2.0.1` and `v2.0.1+YYYYMMDD` tags are Docker image tags — the
+`v`-prefixed tag is a moving tag that always points to the latest build of that
+upstream release.
+
+## [v2.0.1+20260518] — 2026-05-18
+
+### Changed
+
+- **Version scheme** — Adopted `v{upstream}+{date}` convention. Version now
+  tracks the bundled Gupax release with a date-stamped container build suffix.
+  OCI labels (`image.version`, `gupax.version`) updated accordingly (#47).
+
+### Fixed
+
+- **CI build-args broken** (#48) — `GUPAX_VERSION` was arriving empty due to
+  multiline YAML scalar not interpolating `${{ }}`. Both registries were
+  silently falling back to the hardcoded v2.0.1 default. Fixed with
+  comma-separated args + `env:` block pattern.
+- **Registry divergence from `paths:` filter** (#48) — Docker Hub workflow had
+  a `paths:` filter that skipped docs-only commits. Removed; both registries
+  now share identical triggers.
+- **Smoke test Gupax race condition** (#51) — Single-shot `pgrep` fired before
+  `start.sh` reached Gupax launch (80% failure rate). Replaced with 15-attempt
+  polling loop matching Tor/hidden-service probes.
+- **Version tag asymmetry** (#53) — Docker Hub tagged `:v2.0.1`, GHCR tagged
+  `:2.0.1`. Both now emit `:2.0.1` (stripped) and `:v2.0.1` (v-prefixed).
+
+### Security
+
+- **Hadolint warnings resolved** (#52) — `DL4006/SC3040` (pipefail in dash),
+  `DL3009` (uncleaned apt lists), `SC2034` (dead variable). Added `SHELL` to
+  bash with pipefail globally.
+- **OCI labels corrected** (#52) — `image.source` case fixed
+  (`Gupax-docker` → `gupax-docker`), stale `-standalone-tor` suffix removed.
+- **Stale comment fixed** (#54) — `VNC_PASSWORD` → `VNC_AUTH_TOKEN` in
+  `start.sh` comment (was correct in code, wrong in docs).
+
+### Added
+
+- **Date-stamped image tags** — Both registries now push a `v{version}+{date}`
+  immutable tag in addition to the moving tags.
+
+### Documentation
+
+- Port tables consolidated into single master table in README and template
+  README (#47).
+- License restructured as canonical GPL-3.0 with separate NOTICE and SPDX
+  headers.
+- Docker Hub build status badge added to README.
+- Unraid template docs updated for 6.10+ flash-drive install method.
+
+---
+
 ## [2.3.0] — 2026-05-12
 
 ### Security
