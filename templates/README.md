@@ -4,7 +4,7 @@ This directory contains the Docker template XML file for installing **Gupax-dock
 
 The Docker image is published to both:
 - **Docker Hub**: [libre7/gupax-docker](https://hub.docker.com/r/libre7/gupax-docker) (recommended for Unraid)
-- **GitHub Container Registry**: [ghcr.io/libre-7/gupax-docker](https://github.com/libre-7/Gupax-docker/pkgs/container/gupax-docker)
+- **GitHub Container Registry**: [ghcr.io/libre-7/gupax-docker](https://github.com/libre-7/gupax-docker/pkgs/container/gupax-docker)
 
 ## How to Use
 
@@ -63,12 +63,17 @@ The container runs a **noVNC web interface** — no X11 or VNC client needed:
 
 ## Volumes
 
-The template creates four persistent directories under `/mnt/user/appdata/gupax/`:
+The template creates four persistent directories under `/mnt/user/appdata/gupax/`.
 
-- `config/` — Gupax configuration, wallet, and state
-- `share/` — Downloaded mining binaries (P2Pool, XMRig, monerod)
-- `monero/` — Monero blockchain data
-- `tor/` — Tor hidden service keys (persists .onion address)
+Unraid uses host directory paths; `docker compose` uses named volumes.
+The data is the same — only the storage mechanism differs.
+
+| Unraid directory | Container path | Compose named volume |
+|------------------|----------------|---------------------|
+| `config/` | `/home/miner/.local/state/gupax` | `gupax-state` |
+| `share/` | `/home/miner/.local/share/gupax` | `gupax-data` |
+| `monero/` | `/home/miner/.bitmonero` | `gupax-monero` |
+| `tor/` | `/home/miner/.tor` | `gupax-tor` |
 
 ## Using an Existing Blockchain
 
