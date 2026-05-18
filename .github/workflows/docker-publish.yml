@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -53,14 +53,15 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
+        env:
+          GUPAX_VERSION: ${{ env.VERSION }}
         with:
           context: .
           file: ./Dockerfile
           push: true
           platforms: linux/amd64
           tags: ${{ env.TAGS }}
-          build-args: |
-            GUPAX_VERSION=${{ env.VERSION }}
+          build-args: GUPAX_VERSION
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: mode=max
