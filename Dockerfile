@@ -127,11 +127,10 @@ RUN echo '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=v
 COPY start.sh /usr/local/bin/start.sh
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/start.sh /usr/local/bin/healthcheck.sh
-
 EXPOSE 6080 5900
 EXPOSE 3333 37889 18080 18081
-# Tor hidden service ports (internal only — documented for debugging)
-EXPOSE 18084 18086
+# Internal-only ports (documented for debugging — not mapped to host)
+EXPOSE 18083 18084 18086 9050
 
 # Pre-create .bitmonero directory with miner ownership.
 # No .bitmonero symlink needed — monerod resolves its data directory via $HOME
