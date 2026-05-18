@@ -10,6 +10,11 @@
 
 FROM ubuntu:22.04@sha256:4fff072216d2d3d6accc8bc09b57c33e474edd726f3f65fbadbb05647ab15fa5
 
+# Use bash with pipefail for all RUN commands so that failures in piped
+# commands are not silently ignored (e.g., grep | awk producing empty output).
+# The default /bin/sh (dash) does not support pipefail.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Prevent interactive tzdata prompt from blocking the build
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
@@ -33,10 +38,11 @@ RUN curl -fsSL https://deb.torproject.org/torproject.org/pool/main/d/deb.torproj
     && dpkg -i /tmp/tor-keyring.deb && rm /tmp/tor-keyring.deb \
     && echo "deb [arch=$(dpkg --print-architecture)] https://deb.torproject.org/torproject.org jammy main" \
     > /etc/apt/sources.list.d/tor.list \
-    && apt-get update
+    && apt-get update \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install X11 (for Xvfb), VNC, noVNC, GUI file manager, and Gupax runtime dependencies
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     x11-xserver-utils \
     x11vnc \
@@ -91,8 +97,7 @@ WORKDIR /tmp/install
 # For reproducibility, the SHA256 is fetched from upstream SHA256SUMS
 # at build time — the image build fails if verification fails.
 ARG GUPAX_VERSION=v2.0.1
-RUN VERSION_NO_V="${GUPAX_VERSION#v}" \
-    && TARBALL="gupax-${GUPAX_VERSION}-linux-x64.tar.gz" \
+RUN TARBALL="gupax-${GUPAX_VERSION}-linux-x64.tar.gz" \
     && echo "[*] Downloading Gupax ${GUPAX_VERSION}..." \
     && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/${TARBALL}" -o "${TARBALL}" \
     && curl -fsSL "https://github.com/gupax-io/gupax/releases/download/${GUPAX_VERSION}/SHA256SUMS" -o SHA256SUMS \
@@ -108,9 +113,9 @@ RUN VERSION_NO_V="${GUPAX_VERSION#v}" \
 # Labels
 LABEL maintainer="libre-7" \
       description="Gupax — GUI for P2Pool + XMRig Monero mining in Docker (noVNC enabled, standalone binaries + optional Tor)" \
-      org.opencontainers.image.source="https://github.com/libre-7/Gupax-docker" \
+      org.opencontainers.image.source="https://github.com/libre-7/gupax-docker" \
       org.opencontainers.image.icon="https://raw.githubusercontent.com/gupax-io/gupax/main/assets/images/icons/icon.png" \
-      org.opencontainers.image.version="${GUPAX_VERSION}-standalone-tor" \
+      org.opencontainers.image.version="${GUPAX_VERSION}" \
       org.opencontainers.image.licenses="GPL-3.0" \
       gupax.version="${GUPAX_VERSION}"
 
