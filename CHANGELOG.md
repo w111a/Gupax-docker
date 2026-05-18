@@ -4,17 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Versions follow the scheme `v{upstream-gupax}+{build-date}`. The base version
+Versions follow the scheme `v{upstream-gupax}-{build-date}`. The base version
 tracks which Gupax release is bundled; the date suffix differentiates container
 builds. `v2.0.1` and `v2.0.1+YYYYMMDD` tags are Docker image tags — the
 `v`-prefixed tag is a moving tag that always points to the latest build of that
 upstream release.
 
-## [v2.0.1+20260518] — 2026-05-18
+## [v2.0.1-20260518] — 2026-05-18
 
 ### Changed
 
-- **Version scheme** — Adopted `v{upstream}+{date}` convention. Version now
+- **Version scheme** — Adopted `v{upstream}-{date}` convention. Version now
   tracks the bundled Gupax release with a date-stamped container build suffix.
   OCI labels (`image.version`, `gupax.version`) updated accordingly (#47).
 
@@ -45,7 +45,7 @@ upstream release.
 
 ### Added
 
-- **Date-stamped image tags** — Both registries now push a `v{version}+{date}`
+- **Date-stamped image tags** — Both registries now push a `v{version}-{date}`
   immutable tag in addition to the moving tags.
 
 ### Documentation
