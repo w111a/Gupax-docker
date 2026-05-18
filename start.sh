@@ -266,7 +266,7 @@ setxkbmap us 2>/dev/null || echo "[!] setxkbmap failed (non-fatal)"
 
 # Start x11vnc (VNC server sharing Xvfb)
 echo "[*] Starting x11vnc on port 5900..."
-# VNC authentication — use VNC_PASSWORD if set, otherwise disable auth.
+# VNC authentication — use VNC_AUTH_TOKEN if set, otherwise disable auth.
 # Uses -passwdfile instead of -passwd to avoid exposing the password in
 # /proc/PID/cmdline and to handle passwords with spaces or special characters.
 if [ -n "$VNC_AUTH_TOKEN" ]; then
