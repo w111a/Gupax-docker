@@ -79,14 +79,21 @@ jobs:
             sleep 4
           done
 
-      - name: Verify Gupax process
+      - name: Wait for Gupax process
+        timeout-minutes: 2
         run: |
-          docker exec gupax-test pgrep -f gupax || {
-            echo "FAIL: Gupax not running"
-            docker logs gupax-test
-            exit 1
-          }
-          echo "Gupax process OK"
+          for i in $(seq 1 15); do
+            if docker exec gupax-test pgrep -f gupax 2>/dev/null; then
+              echo "Gupax ready after ${i} attempts"
+              break
+            fi
+            if [ $i -eq 15 ]; then
+              echo "FAIL: Gupax did not start"
+              docker logs gupax-test
+              exit 1
+            fi
+            sleep 2
+          done
 
       - name: Verify Tor SOCKS proxy (9050)
         timeout-minutes: 2
