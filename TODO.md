@@ -1,7 +1,5 @@
 # ✅ Gupax-docker — Project Roadmap & TODO
 
----
-
 ## 🔴 Critical — App Won't Run Without These
 
 - [x] **Working Dockerfile** — Gupax binary with Xvfb + x11vnc + noVNC
@@ -10,17 +8,14 @@
 - [x] **docker-compose.yml** — Working compose with Gupax, noVNC, and volumes
 - [x] **README.md** — Clear documentation with Quick Start and troubleshooting
 
----
-
 ## 🟡 Important — Real-World Usability
 
 - [x] **Blockchain volume** — Mount existing Monero blockchain at `/home/miner/.bitmonero`
+- [x] **PR test pipeline** — Lint (shellcheck + hadolint + yamllint) + smoke test on PRs
+- [x] **GHCR + Docker Hub CI** — Image builds pushed to both registries on merge to main
 - [ ] **Multi-arch builds** — Support `linux/arm64` if Gupax provides arm64 binary
 - [ ] **X11 troubleshooting docs** — Expand troubleshooting for common noVNC issues
-- [ ] **CONTRIBUTING.md** — How to submit PRs and report issues
 - [ ] **GitHub Releases** — Tagged releases with release notes
-
----
 
 ## 🟢 Nice to Have — Polish & Production Hardening
 
@@ -31,16 +26,12 @@
 - [ ] **Read-only root filesystem** — Mark image as `read_only: true` where possible
 - [ ] **Monitoring integration** — Optional Prometheus metrics if Gupax exposes them
 
----
-
 ## 📝 Documentation & Community
 
 - [x] **README.md** — Quick Start, noVNC setup, configuration, troubleshooting
 - [x] **CHANGELOG.md** — Track changes per release
 - [ ] **CONTRIBUTING.md** — How to submit PRs and report issues
 - [ ] **GitHub Issues templates** — Bug report and feature request templates
-
----
 
 ## 🧪 Testing & Validation
 
@@ -50,44 +41,13 @@
 - [x] **Tor test** — Verified hidden service + SOCKS proxy on Unraid
 - [x] **Version upgrade test** — SHA256SUMS verification from upstream at build time
 
----
-
-## 🏗️ Current Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│              Gupax-docker Container                      │
-│                                                         │
-│  ┌─────────────┐    ┌─────────────┐    ┌──────────┐   │
-│  │    Xvfb     │◄───│   x11vnc    │◄───│  noVNC   │   │
-│  │ (虚拟X服务器) │    │  (VNC服务)   │    │ (Web服务) │   │
-│  └─────────────┘    └──────┬──────┘    └────┬─────┘   │
-│         :1                  :1               :6080      │
-│                             │                  │       │
-│                    ┌────────▼─────────────────▼─────┐   │
-│                    │         Gupax (egui GUI)    │   │
-│                    │   runs on Xvfb display :1    │   │
-│                    └──────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                          │
-                          │ TCP ports
-                          ▼
-              ┌───────────────────────────┐
-              │   Host Browser Access      │
-              │   http://localhost:6080    │
-              └───────────────────────────┘
-```
-
----
-
 ## 📌 Current Build Information
 
-- **Build method:** Pre-built Gupax binary from upstream
-- **Binary verification:** SHA256 checksum verified at build time
-- **Gupax version:** v2.0.1
+- **Version scheme:** `v{upstream-gupax}-{build-date}` (e.g. `v2.0.1-20260518`)
+- **Gupax version:** Dynamically detected at build time — CI resolves latest upstream release
+- **Build method:** Pre-built Gupax binary from upstream, verified via SHA256SUMS
 - **Image size:** ~375 MB
-- **Components:** Gupax + Xvfb + x11vnc + websockify + noVNC
-
----
+- **Components:** Gupax + Xvfb + x11vnc + websockify + noVNC + Tor (optional)
+- **Registries:** `ghcr.io/libre-7/gupax-docker` + `docker.io/libre7/gupax-docker`
 
 > **Note:** This container uses noVNC for browser-based GUI access. No X11 server needed on the host.
